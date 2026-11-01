@@ -181,7 +181,7 @@ void EvilFXProcessor::processChunk (float* L, float* R, int n)
     float peakL = 0.0f, peakR = 0.0f, maxGr = 0.0f;
     if (limiterOn->load() > 0.5f)
     {
-        constexpr float ceiling = 0.966f, knee = 0.8f;
+        static constexpr float ceiling = 0.966f, knee = 0.8f;
         auto clip = [] (float y)   // transparent below the knee, smooth into the ceiling above it
         {
             const float a = std::abs (y);
