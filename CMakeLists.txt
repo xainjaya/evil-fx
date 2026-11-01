@@ -63,14 +63,13 @@ target_sources(EvilFX PRIVATE ${EVIL_SOURCES})
 set(EVIL_DEFS
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
-    JUCE_VST3_CAN_REPLACE_VST2=0
-    JUCE_DISPLAY_SPLASH_SCREEN=0)
+    JUCE_VST3_CAN_REPLACE_VST2=0)
 if(EVIL_MINIMAL_LINUX_DEPS)
     list(APPEND EVIL_DEFS JUCE_ALSA=0 JUCE_JACK=0 JUCE_USE_XRANDR=0 JUCE_USE_XINERAMA=0
                           JUCE_USE_XCURSOR=0 JUCE_USE_XRENDER=0)
 endif()
 
-target_compile_definitions(EvilFX PUBLIC ${EVIL_DEFS})
+target_compile_definitions(EvilFX PUBLIC ${EVIL_DEFS} EVIL_VERSION="${PROJECT_VERSION}")
 
 target_link_libraries(EvilFX
     PRIVATE
@@ -86,7 +85,7 @@ if(EVIL_BUILD_TESTS)
     juce_add_console_app(EvilFXTests PRODUCT_NAME "EvilFXTests")
     target_sources(EvilFXTests PRIVATE Tests/HeadlessTests.cpp ${EVIL_SOURCES})
     target_include_directories(EvilFXTests PRIVATE Source)
-    target_compile_definitions(EvilFXTests PRIVATE ${EVIL_DEFS}
+    target_compile_definitions(EvilFXTests PRIVATE ${EVIL_DEFS} EVIL_VERSION="${PROJECT_VERSION}"
         JUCE_STANDALONE_APPLICATION=1 JucePlugin_Name="Evil FX")
     target_link_libraries(EvilFXTests PRIVATE
         juce::juce_audio_utils juce::juce_dsp

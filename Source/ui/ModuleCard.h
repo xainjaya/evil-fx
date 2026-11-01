@@ -118,6 +118,16 @@ public:
         refreshEnabledLook();
     }
 
+    // brief glow so you can spot the card you just jumped to
+    void flash() { flashAmt = 1.0f; repaint(); }
+    bool tickFlash()
+    {
+        if (flashAmt <= 0.0f) return false;
+        flashAmt = juce::jmax (0.0f, flashAmt - 0.06f);
+        repaint();
+        return true;
+    }
+
     juce::Slider* getSlider (const juce::String& id)
     {
         for (auto* s : sliders) if (s->getName() == id) return s;
@@ -131,6 +141,14 @@ public:
     void paint (juce::Graphics& g) override
     {
         spec.retro ? paintRetro (g) : paintAero (g);
+
+        if (flashAmt > 0.0f)
+        {
+            const auto fr = getLocalBounds().toFloat().reduced (2.0f);
+            g.setColour (juce::Colour (0xffffe08a).withAlpha (0.9f * flashAmt));
+            if (spec.retro) g.drawRect (fr, 3.0f);
+            else            g.drawRoundedRectangle (fr, 15.0f, 3.0f);
+        }
 
         // knob captions
         g.setFont (spec.retro ? mono (11.0f, true) : sans (11.5f, true));
@@ -153,7 +171,8 @@ public:
         r.removeFromTop (4);
         const bool hasOptions = ! spec.combos.empty() || ! spec.toggles.empty() || spec.number == 0;
         auto opt = hasOptions ? r.removeFromTop (optionH).reduced (6, 2) : juce::Rectangle<int>();
-        for (auto* cb : combos) { cb->setBounds (opt.removeFromLeft (combos.size() > 1 ? 104 : 96)); opt.removeFromLeft (8); }
+        const int comboW = combos.size() > 1 ? juce::jmin (104, (opt.getWidth() - 6 * (combos.size() - 1)) / combos.size()) : 96;
+        for (auto* cb : combos) { cb->setBounds (opt.removeFromLeft (comboW)); opt.removeFromLeft (6); }
         for (auto* t : toggles)
         {
             const int w = spec.retro ? 130 : juce::roundToInt (juce::GlyphArrangement::getStringWidth (sans (12.0f, true), t->getButtonText())) + 46;
@@ -285,6 +304,7 @@ private:
     std::vector<juce::Rectangle<int>> captionBounds;
     juce::Rectangle<int> optionSpare;
     bool lastOn = true;
+    float flashAmt = 0.0f;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> powerAtt;
     juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> comboAtts;

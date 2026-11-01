@@ -115,7 +115,9 @@ void testEachModule()
     const std::vector<std::pair<juce::String, juce::String>> modules {
         { "filter", "filter_" }, { "gloss", "gloss_" }, { "dial", "dial_" }, { "crush", "crush_" }, { "buf", "buf_" },
         { "lobit", "lobit_" }, { "codec", "codec_" }, { "packet", "pkt_" }, { "corrupt", "corrupt_" },
-        { "lag", "lag_" }, { "jitter", "jit_" }, { "speaker", "spk_" }, { "chorus", "chorus_" }, { "phaser", "phaser_" }, { "trem", "trem_" }, { "delay", "delay_" }, { "verb", "verb_" } };
+        { "lag", "lag_" }, { "jitter", "jit_" }, { "speaker", "spk_" }, { "pitch", "pitch_" }, { "ring", "ring_" },
+        { "glitch", "glitch_" }, { "gate", "gate_" }, { "comp", "comp_" }, { "eq", "eq_" }, { "vinyl", "vinyl_" },
+        { "tts", "tts_" }, { "pump", "pump_" }, { "spread", "spread_" }, { "chorus", "chorus_" }, { "phaser", "phaser_" }, { "trem", "trem_" }, { "delay", "delay_" }, { "verb", "verb_" } };
 
     for (auto& [name, prefix] : modules)
     {
@@ -236,19 +238,22 @@ void bench()
                   << juce::String (juce::jmax (0.0, t - base), 3) << " %" << std::endl;
     }
     const double all = measure ([] (EvilFXProcessor& p) { for (int i = 0; i < Rack::numModules; ++i) setParam (p, Rack::onId (i), 1); });
-    std::cout << "  " << juce::String ("ALL 17 ON").paddedRight (' ', 18) << juce::String (all, 3) << " %" << std::endl;
+    std::cout << "  " << juce::String ("ALL ON").paddedRight (' ', 18) << juce::String (all, 3) << " %" << std::endl;
 }
 
-void snapshot (const juce::File& file)
+void snapshot (const juce::File& file, int theme)
 {
     juce::ScopedJuceInitialiser_GUI gui;
     EvilFXProcessor p;
     p.setPlayConfigDetails (2, 2, kRate, kBlock);
     p.prepareToPlay (kRate, kBlock);
-    p.setCurrentProgram (5);   // a preset with retro + aero modules on
+    p.setCurrentProgram (9);   // a preset with retro + aero modules on
     setParam (p, "codec_on", 1); setParam (p, "verb_on", 1); setParam (p, "delay_on", 1); setParam (p, "delay_sync", 4);
-    setParam (p, "corrupt_on", 1); setParam (p, "spk_on", 1);
+    setParam (p, "corrupt_on", 1); setParam (p, "spk_on", 1); setParam (p, "glitch_on", 1); setParam (p, "gate_on", 1);
+    setParam (p, "chorus_on", 1); setParam (p, "comp_on", 1); setParam (p, "pitch_on", 1);
+    setParam (p, "vinyl_on", 1); setParam (p, "eq_on", 1);
     p.apvts.state.setProperty ("vizOn", true, nullptr);
+    p.apvts.state.setProperty ("theme", theme, nullptr);
     run (p, 1.0);
     std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
     ed->setSize (EvilFXEditor::baseW, EvilFXEditor::baseH);
@@ -265,7 +270,7 @@ int main (int argc, char** argv)
 {
     if (argc > 2 && juce::String (argv[1]) == "--snapshot")
     {
-        snapshot (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]));
+        snapshot (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]), argc > 3 ? juce::String (argv[3]).getIntValue() : 0);
         return failures;
     }
     if (argc > 1 && juce::String (argv[1]) == "--bench")

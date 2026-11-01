@@ -301,6 +301,30 @@ public:
     //==========================================================================
     void drawButtonBackground (juce::Graphics& g, juce::Button& b, const juce::Colour&, bool hover, bool down) override
     {
+        if (b.getWidth() > b.getHeight() * 3 / 2)   // wide buttons: glossy pill
+        {
+            auto r = b.getLocalBounds().toFloat().reduced (1.0f);
+            const float corner = r.getHeight() * 0.5f;
+            if ((bool) b.getProperties().getWithDefault ("accent", false))   // the main call-to-action: glossy red
+            {
+                g.setGradientFill (juce::ColourGradient (down ? col::red : juce::Colour (0xffff6a5a), 0, r.getY(),
+                                                         hover ? col::red : juce::Colour (0xffb00c18), 0, r.getBottom(), false));
+                g.fillRoundedRectangle (r, corner);
+                g.setColour (juce::Colours::white.withAlpha (0.45f));
+                g.fillRoundedRectangle (r.withHeight (r.getHeight() * 0.45f).reduced (corner * 0.5f, 1.0f), corner * 0.4f);
+                g.setColour (col::redDeep);
+                g.drawRoundedRectangle (r, corner, 1.0f);
+                return;
+            }
+            g.setGradientFill (juce::ColourGradient (down ? juce::Colour (0xffffb0a0) : juce::Colours::white, 0, r.getY(),
+                                                     hover ? juce::Colour (0xffff8a7a) : juce::Colour (0xffffc8c0), 0, r.getBottom(), false));
+            g.fillRoundedRectangle (r, corner);
+            g.setColour (juce::Colours::white.withAlpha (0.7f));
+            g.fillRoundedRectangle (r.withHeight (r.getHeight() * 0.45f).reduced (corner * 0.5f, 1.0f), corner * 0.4f);
+            g.setColour (col::redDeep.withAlpha (0.55f));
+            g.drawRoundedRectangle (r, corner, 1.0f);
+            return;
+        }
         const auto c = b.getLocalBounds().toFloat().getCentre();
         const float r = juce::jmin (b.getWidth(), b.getHeight()) * 0.5f - 2.0f;
         drawOrb (g, c, r, down ? juce::Colour (0xffffb0b0) : juce::Colours::white,
@@ -309,8 +333,8 @@ public:
 
     void drawButtonText (juce::Graphics& g, juce::TextButton& b, bool, bool) override
     {
-        g.setColour (col::ink);
-        g.setFont (sans (14.0f, true));
+        g.setColour ((bool) b.getProperties().getWithDefault ("accent", false) ? juce::Colours::white : col::ink);
+        g.setFont (sans (b.getWidth() > b.getHeight() * 3 / 2 ? 12.0f : 14.0f, true));
         g.drawText (b.getButtonText(), b.getLocalBounds(), juce::Justification::centred);
     }
 

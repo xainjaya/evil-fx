@@ -45,6 +45,21 @@ struct Biquad
         a1 = float (na1 / na0); a2 = float (na2 / na0);
     }
 
+    void setShelf (bool high, double sr, double f, double gainDb)   // RBJ shelf, slope 1
+    {
+        f = juce::jlimit (10.0, sr * 0.45, f);
+        const double A = std::pow (10.0, gainDb / 40.0);
+        const double w = juce::MathConstants<double>::twoPi * f / sr;
+        const double cw = std::cos (w), alpha = std::sin (w) / 2.0 * std::sqrt (2.0);
+        const double sA = 2.0 * std::sqrt (A) * alpha, sign = high ? -1.0 : 1.0;
+        const double a0 = (A + 1) + sign * (A - 1) * cw + sA;
+        b0 = float (A * ((A + 1) - sign * (A - 1) * cw + sA) / a0);
+        b1 = float (2.0 * sign * A * ((A - 1) - sign * (A + 1) * cw) / a0);
+        b2 = float (A * ((A + 1) - sign * (A - 1) * cw - sA) / a0);
+        a1 = float (-2.0 * sign * ((A - 1) + sign * (A + 1) * cw) / a0);
+        a2 = float (((A + 1) + sign * (A - 1) * cw - sA) / a0);
+    }
+
     void setPeak (double sr, double f, double q, double gainDb)
     {
         f = juce::jlimit (10.0, sr * 0.45, f);
@@ -502,11 +517,11 @@ private:
 };
 
 //==============================================================================
-// 7  DEMON CHORUS
-class DemonChorus : public Module
+// 7  ANGEL CHORUS
+class AngelChorus : public Module
 {
 public:
-    explicit DemonChorus (APVTS& s) : rate (raw (s, "chorus_rate")), depth (raw (s, "chorus_depth")), fb (raw (s, "chorus_fb")), mix (raw (s, "chorus_mix")) {}
+    explicit AngelChorus (APVTS& s) : rate (raw (s, "chorus_rate")), depth (raw (s, "chorus_depth")), fb (raw (s, "chorus_fb")), mix (raw (s, "chorus_mix")) {}
     void prepare (double r, int maxBlock) override { sr = r; chorus.prepare ({ sr, (juce::uint32) maxBlock, 2 }); chorus.setCentreDelay (8.0f); }
     void reset() override { chorus.reset(); }
     void process (float* L, float* R, int n) override
@@ -573,11 +588,11 @@ private:
 };
 
 //==============================================================================
-// 10  HELLFIRE DELAY — tape-ish stereo / ping-pong delay with tempo sync
-class HellfireDelay : public Module
+// 10  HALO DELAY — tape-ish stereo / ping-pong delay with tempo sync
+class HaloDelay : public Module
 {
 public:
-    explicit HellfireDelay (APVTS& s)
+    explicit HaloDelay (APVTS& s)
         : sync (raw (s, "delay_sync")), time (raw (s, "delay_time")), fb (raw (s, "delay_fb")),
           tone (raw (s, "delay_tone")), mix (raw (s, "delay_mix")), pp (raw (s, "delay_pp")) {}
 
@@ -647,11 +662,11 @@ private:
 };
 
 //==============================================================================
-// 11  ABYSS VERB — Freeverb-style hall
-class AbyssVerb : public Module
+// 11  CATHEDRAL VERB — Freeverb-style hall
+class CathedralVerb : public Module
 {
 public:
-    explicit AbyssVerb (APVTS& s) : size (raw (s, "verb_size")), damp (raw (s, "verb_damp")), width (raw (s, "verb_width")), mix (raw (s, "verb_mix")) {}
+    explicit CathedralVerb (APVTS& s) : size (raw (s, "verb_size")), damp (raw (s, "verb_damp")), width (raw (s, "verb_width")), mix (raw (s, "verb_mix")) {}
     void prepare (double r, int maxBlock) override
     {
         sr = r; prepareMix (sr);

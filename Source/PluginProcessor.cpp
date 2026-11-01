@@ -11,28 +11,40 @@ EvilFXProcessor::EvilFXProcessor()
 {
     auto add = [this] (auto module, const char* onId)
     {
+        jassert (juce::String (onId) == Rack::onId ((int) slots.size()));   // chain order must match Rack.h
         slots.push_back (std::make_unique<Slot> (std::move (module), raw (apvts, onId)));
     };
+    // must match the order in Rack.h
     add (std::make_unique<CrimsonFilter>  (apvts), "filter_on");
+    add (std::make_unique<GlassEQ>        (apvts), "eq_on");
     add (std::make_unique<ScorchDrive>    (apvts), "gloss_on");
+    add (std::make_unique<Nightcore>      (apvts), "pitch_on");
+    add (std::make_unique<Ringtone>       (apvts), "ring_on");
+    add (std::make_unique<TTSRobot>       (apvts), "tts_on");
     add (std::make_unique<CodecSim>       (apvts), "codec_on");
     add (std::make_unique<BitCrush>       (apvts), "crush_on");
     add (std::make_unique<DialUp>         (apvts), "dial_on");
+    add (std::make_unique<Vinyl>          (apvts), "vinyl_on");
     add (std::make_unique<LoBitrate>      (apvts), "lobit_on");
     add (std::make_unique<PacketLoss>     (apvts), "pkt_on");
     add (std::make_unique<Buffering>      (apvts), "buf_on");
-    add (std::make_unique<xfx::Corrupt>      (apvts), "corrupt_on");
+    add (std::make_unique<xfx::Corrupt>   (apvts), "corrupt_on");
     add (std::make_unique<LagSpike>       (apvts), "lag_on");
-    add (std::make_unique<xfx::Jitter>      (apvts), "jit_on");
-    add (std::make_unique<DemonChorus>    (apvts), "chorus_on");
+    add (std::make_unique<xfx::Jitter>    (apvts), "jit_on");
+    add (std::make_unique<xfx::Glitch>    (apvts, transport), "glitch_on");
+    add (std::make_unique<BeatGate>       (apvts, transport), "gate_on");
+    add (std::make_unique<xfx::Pump>      (apvts, transport), "pump_on");
+    add (std::make_unique<AngelChorus>    (apvts), "chorus_on");
     add (std::make_unique<BoilingPhaser>  (apvts), "phaser_on");
     add (std::make_unique<TremPan>        (apvts), "trem_on");
-    add (std::make_unique<HellfireDelay>  (apvts), "delay_on");
-    add (std::make_unique<AbyssVerb>      (apvts), "verb_on");
+    add (std::make_unique<StereoSpread>   (apvts), "spread_on");
+    add (std::make_unique<HaloDelay>      (apvts), "delay_on");
+    add (std::make_unique<CathedralVerb>  (apvts), "verb_on");
+    add (std::make_unique<GloryComp>      (apvts), "comp_on");
     add (std::make_unique<SpeakerSim>     (apvts), "spk_on");
     jassert ((int) slots.size() == NumModules && NumModules == Rack::numModules);
-    for (int i = 0; i < NumModules; ++i) jassert (juce::String (Rack::onId (i)).isNotEmpty());
-    delayModule = static_cast<HellfireDelay*> (slots[Delay]->get());
+
+    delayModule = static_cast<HaloDelay*> (slots[Delay]->get());
 
     inGain    = raw (apvts, "in_gain");
     outGain   = raw (apvts, "out_gain");
@@ -96,14 +108,21 @@ void EvilFXProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     const int numIn = getTotalNumInputChannels(), numOut = getTotalNumOutputChannels();
     const int total = buffer.getNumSamples();
 
+    double hostPpq = 0.0;
+    hostPlaying = false;
     if (auto* ph = getPlayHead())
         if (auto pos = ph->getPosition())
-            if (auto bpm = pos->getBpm())
-                delayModule->setBpm (*bpm);
+        {
+            if (auto bpm = pos->getBpm()) { delayModule->setBpm (*bpm); if (*bpm > 20.0 && *bpm < 999.0) transport.bpm = *bpm; }
+            if (auto q = pos->getPpqPosition()) { hostPpq = *q; hostPlaying = pos->getIsPlaying(); }
+        }
+    const double beatsPerSample = transport.bpm / 60.0 / juce::jmax (8000.0, getSampleRate());
+    currentBpm = (float) transport.bpm;
 
     for (int start = 0; start < total; start += maxBlock)
     {
         const int n = juce::jmin (maxBlock, total - start);
+        transport.ppq = (hostPlaying ? hostPpq : freePpq) + start * beatsPerSample;
         auto* L = work.getWritePointer (0);
         auto* R = work.getWritePointer (1);
 
@@ -127,6 +146,7 @@ void EvilFXProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             std::copy_n (R, n, buffer.getWritePointer (1, start));
         }
     }
+    freePpq = (hostPlaying ? hostPpq : freePpq) + total * beatsPerSample;
     for (int c = 2; c < numOut; ++c) buffer.clear (c, 0, total);
 }
 
@@ -181,7 +201,7 @@ void EvilFXProcessor::processChunk (float* L, float* R, int n)
     float peakL = 0.0f, peakR = 0.0f, maxGr = 0.0f;
     if (limiterOn->load() > 0.5f)
     {
-        static constexpr float ceiling = 0.966f, knee = 0.8f;
+        static constexpr float ceiling = 0.966f, knee = 0.8f;   // static: MSVC won't let the lambda use plain local constexprs
         auto clip = [] (float y)   // transparent below the knee, smooth into the ceiling above it
         {
             const float a = std::abs (y);

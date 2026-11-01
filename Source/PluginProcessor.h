@@ -3,6 +3,7 @@
 #include "Params.h"
 #include "Presets.h"
 #include "dsp/NetModules.h"
+#include "dsp/ExtraModules.h"
 #include "Rack.h"
 
 class EvilFXProcessor : public juce::AudioProcessor,
@@ -10,8 +11,9 @@ class EvilFXProcessor : public juce::AudioProcessor,
 {
 public:
     // Order of modules in the chain (also the order of cards in the UI)
-    enum ModuleIndex { Filter, Gloss, Codec, Crush, Dial, LoBit, Packet, Buffer, Corrupt, Lag, Jitter,
-                       Chorus, Phaser, Trem, Delay, Verb, Speaker, NumModules };
+    enum ModuleIndex { Filter, EQ, Gloss, Pitch, Ring, TTS, Codec, Crush, Dial, VinylFx, LoBit, Packet, Buffer, Corrupt,
+                       Lag, Jitter, GlitchFx, Gate, PumpFx, Chorus, Phaser, Trem, Spread, Delay, Verb, Comp, Speaker,
+                       NumModules };
 
     EvilFXProcessor();
     ~EvilFXProcessor() override;
@@ -43,7 +45,7 @@ public:
     juce::AudioProcessorValueTreeState apvts;
 
     // read by the UI
-    std::atomic<float> meterL { 0.0f }, meterR { 0.0f }, gainReductionDb { 0.0f };
+    std::atomic<float> meterL { 0.0f }, meterR { 0.0f }, gainReductionDb { 0.0f }, currentBpm { 120.0f };
     int countActiveModules() const;
 
     // visualizer tap: costs nothing unless the editor switches it on
@@ -56,7 +58,10 @@ private:
     void updateLatency();
 
     std::vector<std::unique_ptr<xfx::Slot>> slots;
-    xfx::HellfireDelay* delayModule = nullptr;
+    xfx::HaloDelay* delayModule = nullptr;
+    xfx::Transport transport;          // shared with the beat-synced modules
+    double freePpq = 0.0;              // our own beat clock while the host is stopped
+    bool hostPlaying = false;
 
     juce::AudioBuffer<float> work, dry, dryDelay;
     int dryDelayPos = 0, maxBlock = 512;

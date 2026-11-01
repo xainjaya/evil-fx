@@ -4,11 +4,7 @@
 // Every parameter in the plugin lives here so the processor, editor and presets
 // all agree on IDs. Modules run in this exact order:
 //
-//   1 Crimson Filter   2 Scorch Drive    3 CODEC.EXE       4 8BIT.EXE
-//   5 DIALUP.EXE       6 LOBITRATE.EXE   7 PACKETLOSS.EXE  8 BUFFERING.EXE
-//   9 CORRUPT.EXE     10 LAG.EXE        11 JITTER.EXE     12 Demon Chorus
-//  13 Boiling Phaser  14 Trem / Pan     15 Hellfire Delay 16 Abyss Verb
-//  17 SPEAKER.EXE  -> Master
+// The chain order lives in Rack.h (onId) and the processor constructor.
 //
 // (The order of the declarations below doesn't matter; Rack.h holds the chain order.)
 //
@@ -52,6 +48,23 @@ namespace Params
         return b[juce::jlimit (0, 9, i)];
     }
 
+    // beat divisions for the BPM-synced modules, in quarter notes
+    inline const juce::StringArray& beatDivNames()
+    {
+        static const juce::StringArray n { "1/4", "1/8", "1/8 T", "1/16", "1/16 T", "1/32" };
+        return n;
+    }
+    inline double beatDivBeats (int i)
+    {
+        static const double b[] { 1.0, 0.5, 1.0 / 3.0, 0.25, 1.0 / 6.0, 0.125 };
+        return b[juce::jlimit (0, 5, i)];
+    }
+    inline const juce::StringArray& gatePatternNames()
+    {
+        static const juce::StringArray n { "Straight", "Offbeat", "Dotted", "Trance 1", "Trance 2", "Stutter", "Half-Time", "Random" };
+        return n;
+    }
+
     inline const juce::StringArray& codecRateNames()
     {
         static const juce::StringArray n { "22 kHz", "16 kHz", "11 kHz", "8 kHz", "5.5 kHz" };
@@ -77,7 +90,7 @@ namespace Params
         { p.push_back (std::make_unique<APF> (pid (id), name, r, def, a)); };
         auto lin = [] (float lo, float hi) { return juce::NormalisableRange<float> (lo, hi); };
 
-        // 1 Crimson Filter
+        // Crimson Filter
         onOff ("filter_on", "Filter On");
         p.push_back (std::make_unique<APC> (pid ("filter_mode"), "Filter Mode", juce::StringArray { "Low Pass", "Band Pass", "High Pass" }, 0));
         flt ("filter_cutoff",   "Filter Cutoff",    skewed (20.0f, 20000.0f, 1000.0f), 6000.0f, hz());
@@ -85,7 +98,7 @@ namespace Params
         flt ("filter_lforate",  "Filter LFO Rate",  skewed (0.01f, 10.0f, 1.0f), 0.3f, hz());
         flt ("filter_lfodepth", "Filter LFO Depth", lin (0.0f, 4.0f), 0.0f, oct());
 
-        // 2 Scorch Drive (saturation)
+        // Scorch Drive (saturation)
         onOff ("gloss_on", "Scorch On");
         flt ("gloss_drive", "Scorch Drive", lin (0.0f, 24.0f), 6.0f, db());
         flt ("gloss_tone",  "Scorch Tone",  lin (-1.0f, 1.0f), 0.0f, bip());
@@ -153,20 +166,89 @@ namespace Params
         flt ("jit_drift",   "Jitter Drift",   lin (0.0f, 1.0f), 0.2f, pct());
         flt ("jit_mix",     "Jitter Mix",     lin (0.0f, 1.0f), 1.0f, pct());
 
+        // NIGHTCORE.EXE — pitch shifter
+        onOff ("pitch_on", "Nightcore On");
+        flt ("pitch_semi", "Nightcore Pitch", lin (-12.0f, 12.0f), 4.0f,
+             Attr().withStringFromValueFunction ([] (float v, int) { return (v > 0 ? "+" : "") + juce::String (v, 1) + " st"; }));
+        flt ("pitch_window", "Nightcore Grain", lin (0.0f, 1.0f), 0.5f, pct());
+        flt ("pitch_mix",  "Nightcore Mix",   lin (0.0f, 1.0f), 1.0f, pct());
+
+        // RINGTONE.EXE — ring modulator with ringtone warble
+        onOff ("ring_on", "Ringtone On");
+        flt ("ring_freq",   "Ringtone Freq",   skewed (20.0f, 4000.0f, 400.0f), 440.0f, hz());
+        flt ("ring_shape",  "Ringtone Shape",  lin (0.0f, 1.0f), 0.0f, pct());
+        flt ("ring_warble", "Ringtone Warble", lin (0.0f, 1.0f), 0.0f, pct());
+        flt ("ring_mix",    "Ringtone Mix",    lin (0.0f, 1.0f), 0.5f, pct());
+
+        // GLITCH.EXE — beat-synced repeat / stutter / reverse / tape stop
+        onOff ("glitch_on", "Glitch On");
+        p.push_back (std::make_unique<APC> (pid ("glitch_div"), "Glitch Division", beatDivNames(), 3));
+        p.push_back (std::make_unique<APC> (pid ("glitch_style"), "Glitch Style", juce::StringArray { "Random", "Repeat", "Stutter", "Reverse", "Tape Stop" }, 0));
+        flt ("glitch_chance", "Glitch Chance", lin (0.0f, 1.0f), 0.35f, pct());
+        flt ("glitch_mix",    "Glitch Mix",    lin (0.0f, 1.0f), 1.0f, pct());
+
+        // GATE.EXE — beat-synced rhythmic gate
+        onOff ("gate_on", "Gate On");
+        p.push_back (std::make_unique<APC> (pid ("gate_pattern"), "Gate Pattern", gatePatternNames(), 3));
+        p.push_back (std::make_unique<APC> (pid ("gate_div"), "Gate Division", beatDivNames(), 3));
+        flt ("gate_depth",  "Gate Depth",  lin (0.0f, 1.0f), 0.9f, pct());
+        flt ("gate_smooth", "Gate Smooth", lin (0.0f, 1.0f), 0.3f, pct());
+
+        // Glory Comp — easy compressor with auto makeup
+        onOff ("comp_on", "Comp On");
+        flt ("comp_squash", "Comp Squash", lin (0.0f, 1.0f), 0.4f, pct());
+        flt ("comp_ratio",  "Comp Ratio",  skewed (1.0f, 20.0f, 4.0f), 4.0f,
+             Attr().withStringFromValueFunction ([] (float v, int) { return juce::String (v, 1) + ":1"; }));
+        flt ("comp_speed",  "Comp Speed",  lin (0.0f, 1.0f), 0.4f, pct());
+        flt ("comp_mix",    "Comp Mix",    lin (0.0f, 1.0f), 1.0f, pct());
+
+        // Glass EQ — 3-band tone shaping
+        onOff ("eq_on", "EQ On");
+        flt ("eq_low",     "EQ Low",      lin (-12.0f, 12.0f), 0.0f, db());
+        flt ("eq_mid",     "EQ Mid",      lin (-12.0f, 12.0f), 0.0f, db());
+        flt ("eq_midfreq", "EQ Mid Freq", skewed (200.0f, 6000.0f, 1000.0f), 1000.0f, hz());
+        flt ("eq_high",    "EQ High",     lin (-12.0f, 12.0f), 0.0f, db());
+
+        // VINYL.EXE — crackle, dust, hiss, wear and 33rpm wow
+        onOff ("vinyl_on", "Vinyl On");
+        flt ("vinyl_crackle", "Vinyl Crackle", lin (0.0f, 1.0f), 0.4f, pct());
+        flt ("vinyl_wear",    "Vinyl Wear",    lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("vinyl_wow",     "Vinyl Wow",     lin (0.0f, 1.0f), 0.2f, pct());
+        flt ("vinyl_mix",     "Vinyl Mix",     lin (0.0f, 1.0f), 1.0f, pct());
+
+        // TTS.EXE — robotic text-to-speech voice
+        onOff ("tts_on", "TTS On");
+        flt ("tts_pitch", "TTS Pitch", skewed (40.0f, 400.0f, 120.0f), 110.0f, hz());
+        flt ("tts_metal", "TTS Metal", lin (0.0f, 0.95f), 0.6f, pct());
+        flt ("tts_buzz",  "TTS Buzz",  lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("tts_mix",   "TTS Mix",   lin (0.0f, 1.0f), 0.7f, pct());
+
+        // PUMP.EXE — tempo-synced sidechain pumping
+        onOff ("pump_on", "Pump On");
+        p.push_back (std::make_unique<APC> (pid ("pump_div"), "Pump Rate", juce::StringArray { "1/2", "1/4", "1/8", "1/16" }, 1));
+        flt ("pump_depth", "Pump Depth", lin (0.0f, 1.0f), 0.7f, pct());
+        flt ("pump_shape", "Pump Release", lin (0.0f, 1.0f), 0.4f, pct());
+
+        // Stereo Spread — mono-safe widener / doubler
+        onOff ("spread_on", "Spread On");
+        flt ("spread_width",  "Spread Width",  lin (0.0f, 1.0f), 0.5f, pct());
+        flt ("spread_motion", "Spread Motion", lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("spread_mix",    "Spread Mix",    lin (0.0f, 1.0f), 1.0f, pct());
+
         // SPEAKER.EXE — cheap playback devices
         onOff ("spk_on", "Speaker On");
         p.push_back (std::make_unique<APC> (pid ("spk_model"), "Speaker Model", speakerNames(), 1));
         flt ("spk_drive", "Speaker Drive", lin (0.0f, 1.0f), 0.3f, pct());
         flt ("spk_mix",   "Speaker Mix",   lin (0.0f, 1.0f), 1.0f, pct());
 
-        // 7 Demon Chorus
+        // Angel Chorus
         onOff ("chorus_on", "Chorus On");
         flt ("chorus_rate",  "Chorus Rate",     skewed (0.05f, 5.0f, 0.8f), 0.6f, hz());
         flt ("chorus_depth", "Chorus Depth",    lin (0.0f, 1.0f), 0.4f, pct());
         flt ("chorus_fb",    "Chorus Feedback", lin (-0.9f, 0.9f), 0.0f, bip());
         flt ("chorus_mix",   "Chorus Mix",      lin (0.0f, 1.0f), 0.5f, pct());
 
-        // 8 Boiling Phaser
+        // Boiling Phaser
         onOff ("phaser_on", "Phaser On");
         flt ("phaser_rate",  "Phaser Rate",     skewed (0.02f, 5.0f, 0.5f), 0.3f, hz());
         flt ("phaser_depth", "Phaser Depth",    lin (0.0f, 1.0f), 0.6f, pct());
@@ -180,7 +262,7 @@ namespace Params
         flt ("trem_shape", "Trem Shape", lin (0.0f, 1.0f), 0.0f, pct());
         flt ("trem_pan",   "Trem Pan",   lin (0.0f, 1.0f), 0.0f, pct());
 
-        // 10 Hellfire Delay
+        // Halo Delay
         onOff ("delay_on", "Delay On");
         p.push_back (std::make_unique<APC> (pid ("delay_sync"), "Delay Sync", delaySyncNames(), 0));
         flt ("delay_time", "Delay Time",     skewed (10.0f, 2000.0f, 400.0f), 350.0f, ms());
@@ -189,7 +271,7 @@ namespace Params
         flt ("delay_mix",  "Delay Mix",      lin (0.0f, 1.0f), 0.3f, pct());
         onOff ("delay_pp", "Delay Ping-Pong", true);
 
-        // 11 Abyss Verb
+        // Cathedral Verb
         onOff ("verb_on", "Reverb On");
         flt ("verb_size",  "Reverb Size",  lin (0.0f, 1.0f), 0.6f, pct());
         flt ("verb_damp",  "Reverb Damping", lin (0.0f, 1.0f), 0.4f, pct());
