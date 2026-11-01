@@ -88,8 +88,8 @@ public:
             phase += inc; if (phase >= 1.0f) phase -= 1.0f;
             float rp = (float) w - (base + wowDepth * std::sin (twoPi * phase));
             if (rp < 0.0f) rp += (float) len;
-            const int i0 = (int) rp, i1 = (i0 + 1) % len;
-            const float fr = rp - (float) i0;
+            const int iR = (int) rp, i0 = iR % len, i1 = (i0 + 1) % len;   // rp can round up to exactly len
+            const float fr = (float) (rp - iR);
 
             if (rng.nextFloat() < popProb) pop = (rng.nextFloat() * 2.0f - 1.0f) * 0.5f * cr;
             pop *= 0.92f;
@@ -153,8 +153,8 @@ public:
             const float f = pitchS.getNextValue();
             const float d = juce::jlimit (2.0f, (float) len - 2.0f, (float) sr / f);
             float rp = (float) w - d; if (rp < 0.0f) rp += (float) len;
-            const int i0 = (int) rp, i1 = (i0 + 1) % len;
-            const float fr = rp - (float) i0;
+            const int iR = (int) rp, i0 = iR % len, i1 = (i0 + 1) % len;   // rp can round up to exactly len
+            const float fr = (float) (rp - iR);
             phase += f / (float) sr; if (phase >= 1.0f) phase -= 1.0f;
             const float carrier = phase < 0.5f ? 1.0f : -1.0f;
             const float m = mixS.getNextValue();
@@ -180,21 +180,46 @@ private:
 };
 
 //==============================================================================
-// Tempo-synced volume ducking, like a kick sidechaining the track.
+// Volume ducking, like a kick sidechaining the track. Tempo mode ducks on the beat
+// grid; Sidechain In mode follows whatever the host feeds the sidechain input
+// (falls back to the tempo grid if nothing is connected).
 class Pump : public Module
 {
 public:
-    Pump (APVTS& s, const Transport& t) : transport (t), div (raw (s, "pump_div")), depth (raw (s, "pump_depth")), shape (raw (s, "pump_shape")) {}
+    Pump (APVTS& s, const Transport& t, const SideChain& sc)
+        : transport (t), side (sc), div (raw (s, "pump_div")), depth (raw (s, "pump_depth")), shape (raw (s, "pump_shape")),
+          mode (raw (s, "pump_mode")) {}
 
-    void prepare (double r, int) override { sr = r; coef = (float) (1.0 - std::exp (-1.0 / (sr * 0.0015))); reset(); }
-    void reset() override { g = 1.0f; }
+    void prepare (double r, int) override
+    {
+        sr = r;
+        coef = (float) (1.0 - std::exp (-1.0 / (sr * 0.0015)));
+        envAtt = (float) (1.0 - std::exp (-1.0 / (sr * 0.001)));
+        reset();
+    }
+    void reset() override { g = 1.0f; env = 0.0f; }
 
     void process (float* L, float* R, int n) override
     {
+        const float d = depth->load();
+        if (mode->load() > 0.5f && side.active())
+        {
+            // release 40 ms .. 600 ms from the Release knob
+            const float rel = (float) (1.0 - std::exp (-1.0 / (sr * (0.04 + shape->load() * 0.56))));
+            for (int i = 0; i < n; ++i)
+            {
+                const float lvl = juce::jmax (std::abs (side.L[i]), std::abs (side.R[i]));
+                env += (lvl > env ? envAtt : rel) * (lvl - env);
+                const float target = 1.0f - d * juce::jlimit (0.0f, 1.0f, env * 4.0f);
+                g += coef * (target - g);
+                L[i] *= g; R[i] *= g;
+            }
+            return;
+        }
         static constexpr double beats[] { 2.0, 1.0, 0.5, 0.25 };
         const double divBeats = beats[juce::jlimit (0, 3, (int) div->load())];
         const double beatsPerSample = transport.bpm / 60.0 / sr;
-        const float d = depth->load(), e = 0.2f + shape->load() * 2.3f;
+        const float e = 0.2f + shape->load() * 2.3f;
         for (int i = 0; i < n; ++i)
         {
             const double pos = (transport.ppq + i * beatsPerSample) / divBeats;
@@ -207,8 +232,9 @@ public:
 
 private:
     const Transport& transport;
-    std::atomic<float> *div, *depth, *shape;
-    float g = 1.0f, coef = 0.01f;
+    const SideChain& side;
+    std::atomic<float> *div, *depth, *shape, *mode;
+    float g = 1.0f, coef = 0.01f, env = 0.0f, envAtt = 0.1f;
 };
 
 //==============================================================================
@@ -252,8 +278,8 @@ private:
     float read (float d) const
     {
         float rp = (float) w - d; if (rp < 0.0f) rp += (float) len;
-        const int i0 = (int) rp, i1 = (i0 + 1) % len;
-        const float fr = rp - (float) i0;
+        const int iR = (int) rp, i0 = iR % len, i1 = (i0 + 1) % len;   // rp can round up to exactly len
+        const float fr = (float) (rp - iR);
         return buf[(size_t) i0] + (buf[(size_t) i1] - buf[(size_t) i0]) * fr;
     }
 

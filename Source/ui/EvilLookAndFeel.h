@@ -80,8 +80,11 @@ inline void drawOrb (juce::Graphics& g, juce::Point<float> c, float r, juce::Col
 // The Evil FX mascot: glossy blue smiley wearing a sideways orange cap with a
 // purple/black checker patch. `c` is the centre of the head, `r` its radius;
 // the cap reaches ~1.35r above the centre and the brim ~1.55r to the right.
-inline void drawSmiley (juce::Graphics& g, juce::Point<float> c, float r)
+// blink: 0 = eyes open, 1 = shut. grin: 0 = normal smile, 1 = big open-mouth grin.
+inline void drawSmiley (juce::Graphics& g, juce::Point<float> c, float r, float blink = 0.0f, float grin = 0.0f)
 {
+    blink = juce::jlimit (0.0f, 1.0f, blink);
+    grin = juce::jlimit (0.0f, 1.0f, grin);
     auto P = [c, r] (float x, float y) { return juce::Point<float> (c.x + x * r, c.y + y * r); };
 
     // soft blue glow behind everything
@@ -97,14 +100,30 @@ inline void drawSmiley (juce::Graphics& g, juce::Point<float> c, float r)
     for (float ex : { -0.37f, 0.37f })
     {
         const auto e = P (ex, -0.05f);
+        const float eh = r * 0.4f * juce::jmax (0.12f, 1.0f - blink);
         g.setColour (ink);
-        g.fillEllipse (e.x - r * 0.12f, e.y - r * 0.2f, r * 0.24f, r * 0.4f);
-        g.setColour (juce::Colours::white.withAlpha (0.6f));
-        g.fillEllipse (e.x + r * 0.01f, e.y - r * 0.14f, r * 0.07f, r * 0.12f);
+        g.fillEllipse (e.x - r * 0.12f, e.y - eh * 0.5f, r * 0.24f, eh);
+        if (blink < 0.5f)
+        {
+            g.setColour (juce::Colours::white.withAlpha (0.6f * (1.0f - blink * 2.0f)));
+            g.fillEllipse (e.x + r * 0.01f, e.y - eh * 0.35f, r * 0.07f, eh * 0.3f);
+        }
     }
+    const float depth = 0.66f + 0.22f * grin;
     juce::Path smile;
     smile.startNewSubPath (P (-0.68f, 0.12f));
-    smile.cubicTo (P (-0.42f, 0.66f), P (0.42f, 0.68f), P (0.66f, 0.1f));
+    smile.cubicTo (P (-0.42f, depth), P (0.42f, depth + 0.02f), P (0.66f, 0.1f));
+    if (grin > 0.3f)   // mouth opens into a grin
+    {
+        const float open = (grin - 0.3f) / 0.7f;
+        juce::Path mouth (smile);
+        mouth.cubicTo (P (0.4f, 0.1f + 0.2f * (1.0f - open)), P (-0.4f, 0.1f + 0.2f * (1.0f - open)), P (-0.68f, 0.12f));
+        mouth.closeSubPath();
+        g.setColour (juce::Colour (0xff3a0f2a).withAlpha (open));
+        g.fillPath (mouth);
+        g.setColour (juce::Colour (0xffff6f9a).withAlpha (open * 0.85f));   // tongue
+        g.fillEllipse (c.x - r * 0.2f, c.y + r * (depth - 0.2f), r * 0.4f, r * 0.16f);
+    }
     g.setColour (ink);
     g.strokePath (smile, juce::PathStrokeType (r * 0.12f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
 

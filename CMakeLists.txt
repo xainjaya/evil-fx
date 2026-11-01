@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.22)
-project(EvilFX VERSION 1.1.0 LANGUAGES C CXX)
+project(EvilFX VERSION 1.2.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum macOS version")
 
 option(EVIL_BUILD_TESTS "Build the headless DSP test + UI snapshot tool" ON)
+option(EVIL_BUILD_CLAP "Also build a CLAP plugin (via clap-juce-extensions)" ON)
 option(EVIL_MINIMAL_LINUX_DEPS "Linux: build without ALSA/Xrandr/Xinerama/Xcursor headers (CI/containers)" OFF)
 
 set(EVIL_LINUX_MINIMAL_FLAGS -DJUCE_ALSA=0 -DJUCE_JACK=0 -DJUCE_USE_XRANDR=0 -DJUCE_USE_XINERAMA=0
@@ -54,6 +55,27 @@ juce_add_plugin(EvilFX
     COPY_PLUGIN_AFTER_BUILD   FALSE
     VST3_CATEGORIES           Fx
     AU_MAIN_TYPE              kAudioUnitType_Effect)
+
+# ---- CLAP: same plugin, wrapped by clap-juce-extensions ---------------------------
+if(EVIL_BUILD_CLAP)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/clap-juce-extensions/CMakeLists.txt")
+        add_subdirectory(clap-juce-extensions EXCLUDE_FROM_ALL)
+    else()
+        include(FetchContent)
+        FetchContent_Declare(clap-juce-extensions
+            GIT_REPOSITORY https://github.com/free-audio/clap-juce-extensions.git
+            GIT_TAG        7adee3a1bd4684d4caa5601100e364abccff4b4d
+            GIT_SUBMODULES_RECURSE TRUE)
+        FetchContent_GetProperties(clap-juce-extensions)
+        if(NOT clap-juce-extensions_POPULATED)
+            FetchContent_Populate(clap-juce-extensions)
+            add_subdirectory(${clap-juce-extensions_SOURCE_DIR} ${clap-juce-extensions_BINARY_DIR} EXCLUDE_FROM_ALL)
+        endif()
+    endif()
+    clap_juce_extensions_plugin(TARGET EvilFX
+        CLAP_ID "com.xainjaya.evilfx"
+        CLAP_FEATURES audio-effect multi-effects distortion delay reverb stereo)
+endif()
 
 set(EVIL_SOURCES
     Source/PluginProcessor.cpp

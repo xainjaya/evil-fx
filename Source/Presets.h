@@ -393,6 +393,74 @@ namespace Presets
                 { "glitch_on", 1 }, { "glitch_div", 4 }, { "glitch_style", 0 }, { "glitch_chance", 0.4f },
                 { "rdelay_on", 1 }, { "rdelay_sync", 3 }, { "rdelay_fb", 0.5f }, { "rdelay_mix", 0.4f },
                 { "out_gain", -1 } } },
+
+            //==================================================================== Vocals & Robots
+            { "Vocals & Robots", "Hard Tune (C Major)", {
+                { "tune_on", 1 }, { "tune_key", 0 }, { "tune_scale", 1 }, { "tune_speed", 0 }, { "tune_amount", 1 },
+                { "comp_on", 1 }, { "comp_squash", 0.4f }, { "comp_ratio", 4 }, { "comp_speed", 0.35f },
+                { "verb_on", 1 }, { "verb_size", 0.5f }, { "verb_mix", 0.15f } } },
+            { "Vocals & Robots", "Natural Tune", {
+                { "tune_on", 1 }, { "tune_scale", 0 }, { "tune_speed", 0.25f }, { "tune_amount", 0.8f },
+                { "eq_on", 1 }, { "eq_low", -2 }, { "eq_high", 2 } } },
+            { "Vocals & Robots", "2009 Club Vocal", {
+                { "ngate_on", 1 }, { "ngate_thresh", -50 },
+                { "tune_on", 1 }, { "tune_key", 9 }, { "tune_scale", 2 }, { "tune_speed", 0 },
+                { "chorus_on", 1 }, { "chorus_sync", 3 }, { "chorus_depth", 0.3f }, { "chorus_mix", 0.3f },
+                { "delay_on", 1 }, { "delay_sync", 4 }, { "delay_fb", 0.35f }, { "delay_mix", 0.2f } } },
+            { "Vocals & Robots", "Classic Vocoder", {
+                { "voc_on", 1 }, { "voc_carrier", 1 }, { "voc_note", 45 }, { "voc_release", 40 }, { "voc_mix", 0.9f },
+                { "chorus_on", 1 }, { "chorus_rate", 0.4f }, { "chorus_depth", 0.4f }, { "chorus_mix", 0.35f } } },
+            { "Vocals & Robots", "Daft Robot", {
+                { "voc_on", 1 }, { "voc_carrier", 0 }, { "voc_note", 40 }, { "voc_release", 25 }, { "voc_mix", 1 },
+                { "comp_on", 1 }, { "comp_squash", 0.5f }, { "comp_ratio", 6 },
+                { "phaser_on", 1 }, { "phaser_sync", 3 }, { "phaser_depth", 0.5f }, { "phaser_mix", 0.35f } } },
+            { "Vocals & Robots", "Whisper Choir", {
+                { "voc_on", 1 }, { "voc_carrier", 2 }, { "voc_formant", 0.3f }, { "voc_release", 80 }, { "voc_mix", 0.8f },
+                { "verb_on", 1 }, { "verb_size", 0.9f }, { "verb_mix", 0.45f } } },
+            { "Vocals & Robots", "Chipmunk Vocoder", {
+                { "voc_on", 1 }, { "voc_carrier", 1 }, { "voc_note", 60 }, { "voc_formant", 0.8f }, { "voc_mix", 0.9f },
+                { "tune_on", 1 }, { "tune_speed", 0 } } },
+            { "Vocals & Robots", "Clean Gate", {
+                { "ngate_on", 1 }, { "ngate_thresh", -40 }, { "ngate_range", 60 }, { "ngate_release", 150 },
+                { "comp_on", 1 }, { "comp_squash", 0.35f }, { "comp_ratio", 3 } } },
+
+            //==================================================================== Fuzz & Drive
+            { "Fuzz & Drive", "Fuzz Face", {
+                { "fuzz_on", 1 }, { "fuzz_type", 0 }, { "fuzz_drive", 26 }, { "fuzz_tone", 3500 }, { "fuzz_gate", 0.15f },
+                { "verb_on", 1 }, { "verb_size", 0.35f }, { "verb_mix", 0.12f } } },
+            { "Fuzz & Drive", "Blown Speaker", {
+                { "fuzz_on", 1 }, { "fuzz_type", 1 }, { "fuzz_drive", 36 }, { "fuzz_tone", 2500 },
+                { "spk_on", 1 }, { "spk_model", 1 }, { "spk_drive", 0.6f }, { "out_gain", -3 } } },
+            { "Fuzz & Drive", "Octave Fuzz", {
+                { "fuzz_on", 1 }, { "fuzz_type", 2 }, { "fuzz_drive", 22 }, { "fuzz_tone", 5000 }, { "fuzz_gate", 0.2f },
+                { "phaser_on", 1 }, { "phaser_sync", 4 }, { "phaser_depth", 0.6f }, { "phaser_mix", 0.4f } } },
+            { "Fuzz & Drive", "Wavefold Synth Bass", {
+                { "fuzz_on", 1 }, { "fuzz_type", 3 }, { "fuzz_drive", 18 }, { "fuzz_tone", 6000 },
+                { "filter_on", 1 }, { "filter_mode", 0 }, { "filter_cutoff", 1200 }, { "filter_reso", 3 },
+                { "filter_lfodepth", 1.5f }, { "filter_sync", 7 } } },
+            { "Fuzz & Drive", "Gated Fuzz Chug", {
+                { "ngate_on", 1 }, { "ngate_thresh", -35 }, { "ngate_release", 40 },
+                { "fuzz_on", 1 }, { "fuzz_type", 1 }, { "fuzz_drive", 30 }, { "fuzz_tone", 4500 },
+                { "eq_on", 1 }, { "eq_mid", -4 }, { "eq_midfreq", 700 }, { "eq_low", 3 } } },
+
+            //==================================================================== Tempo Motion
+            { "Tempo Motion", "Synced Wobble", {
+                { "filter_on", 1 }, { "filter_mode", 0 }, { "filter_cutoff", 600 }, { "filter_reso", 4 },
+                { "filter_lfodepth", 3 }, { "filter_sync", 8 },
+                { "fuzz_on", 1 }, { "fuzz_type", 0 }, { "fuzz_drive", 10 }, { "fuzz_mix", 0.4f } } },
+            { "Tempo Motion", "Quarter Note Trem", {
+                { "trem_on", 1 }, { "trem_sync", 5 }, { "trem_depth", 0.8f }, { "trem_shape", 0.6f },
+                { "verb_on", 1 }, { "verb_size", 0.5f }, { "verb_mix", 0.2f } } },
+            { "Tempo Motion", "Bar Sweep Flanger", {
+                { "flange_on", 1 }, { "flange_sync", 2 }, { "flange_depth", 0.9f }, { "flange_fb", 0.75f }, { "flange_mix", 0.55f } } },
+            { "Tempo Motion", "Sixteenth Auto-Pan", {
+                { "trem_on", 1 }, { "trem_sync", 9 }, { "trem_depth", 0.6f }, { "trem_pan", 1 },
+                { "spread_on", 1 }, { "spread_width", 0.4f } } },
+            { "Tempo Motion", "Talking Bassline", {
+                { "talk_on", 1 }, { "talk_sync", 7 }, { "talk_sweep", 1.0f }, { "talk_voice", 0 },
+                { "fuzz_on", 1 }, { "fuzz_type", 3 }, { "fuzz_drive", 12 }, { "fuzz_mix", 0.5f } } },
+            { "Tempo Motion", "Kick Ducker (Sidechain)", {
+                { "pump_on", 1 }, { "pump_mode", 1 }, { "pump_depth", 0.75f }, { "pump_shape", 0.35f } } },
         };
         return p;
     }
@@ -416,7 +484,8 @@ namespace Presets
 
         state.state.setProperty ("preset", index, nullptr);
         state.state.setProperty ("presetName", list[(size_t) index].name, nullptr);
-        Rack::syncFromParams (state);   // the rack shows exactly what the preset uses
+        Rack::syncFromParams (state, state.undoManager);   // the rack shows exactly what the preset uses
+        Rack::setOrder (state.state, Rack::defaultOrder(), state.undoManager);
     }
 
     //==========================================================================
@@ -442,6 +511,7 @@ namespace Presets
                 {
                     const auto id = rp->getParameterID();
                     if (! id.startsWith (prefix) || id == onId) continue;
+                    if (id == "pump_mode" || id == "ngate_key" || id == "voc_carrier" || id == "ngate_thresh") continue;   // keep it audible without a sidechain
                     float v = rng.nextFloat();
                     if (id.endsWith ("_mix")) v = 0.35f + 0.65f * v;   // keep every chosen effect audible
                     rp->setValueNotifyingHost (v);
@@ -450,7 +520,8 @@ namespace Presets
         }
         state.state.setProperty ("preset", 0, nullptr);
         state.state.setProperty ("presetName", "Randomized", nullptr);
-        Rack::syncFromParams (state);
+        Rack::syncFromParams (state, state.undoManager);
+        Rack::setOrder (state.state, Rack::defaultOrder(), state.undoManager);
     }
 
     //==========================================================================
@@ -477,6 +548,36 @@ namespace Presets
         state.state.setProperty ("presetName", clean, nullptr);
         auto xml = state.copyState().createXml();
         return xml != nullptr && xml->writeTo (userFolder().getChildFile (clean + ".evilfx"));
+    }
+
+    //==========================================================================
+    // Favourites: one key per line in Documents/Evil FX/favourites.txt
+    // ("factory:Name" or "user:Name" so a user preset can share a factory name).
+    inline juce::String favKeyFactory (const juce::String& name) { return "factory:" + name; }
+    inline juce::String favKeyUser (const juce::String& name)    { return "user:" + name; }
+
+    inline juce::File favouritesFile() { return userFolder().getParentDirectory().getChildFile ("favourites.txt"); }
+
+    inline juce::StringArray loadFavourites()
+    {
+        juce::StringArray a;
+        a.addLines (favouritesFile().loadFileAsString());
+        a.trim(); a.removeEmptyStrings(); a.removeDuplicates (false);
+        return a;
+    }
+
+    inline void saveFavourites (const juce::StringArray& keys)
+    {
+        favouritesFile().replaceWithText (keys.joinIntoString ("\n"));
+    }
+
+    inline bool toggleFavourite (const juce::String& key)   // returns the new state
+    {
+        auto f = loadFavourites();
+        const bool nowFav = ! f.contains (key);
+        if (nowFav) f.add (key); else f.removeString (key);
+        saveFavourites (f);
+        return nowFav;
     }
 
     inline bool loadUser (juce::AudioProcessorValueTreeState& state, const juce::File& file)

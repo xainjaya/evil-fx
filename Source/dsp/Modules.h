@@ -90,6 +90,54 @@ struct OnePole   // simple lowpass, coefficient from cutoff
 };
 
 //==============================================================================
+// Host transport, filled in by the processor once per chunk. When the host isn't
+// playing, the processor keeps its own free-running beat clock so the BPM effects
+// still work (e.g. in the standalone app or with the transport stopped).
+struct Transport
+{
+    double ppq = 0.0;     // position in quarter notes at the start of the chunk
+    double bpm = 120.0;
+};
+
+// The sidechain input for the current chunk (null when the host isn't feeding one).
+struct SideChain
+{
+    const float* L = nullptr;
+    const float* R = nullptr;
+    bool active() const { return L != nullptr; }
+};
+
+// LFO phase for the modulation effects. Free = runs at the Rate knob in Hz.
+// Synced = locked to the beat grid, so the sweep lands in the same place every bar.
+struct LfoClock
+{
+    const Transport* transport = nullptr;
+    double phase = 0.0, inc = 0.0;
+
+    // call once per block; returns the per-sample increment in cycles
+    void begin (int syncIndex, float freeHz, double sampleRate)
+    {
+        if (syncIndex <= 0 || transport == nullptr)
+        {
+            inc = freeHz / sampleRate;
+            return;
+        }
+        const double beats = Params::lfoSyncBeats (syncIndex);
+        phase = transport->ppq / beats;
+        phase -= std::floor (phase);
+        inc = transport->bpm / 60.0 / beats / sampleRate;
+    }
+    inline float next()   // returns the phase (0..1) for this sample, then advances
+    {
+        const float p = (float) phase;
+        phase += inc;
+        if (phase >= 1.0) phase -= std::floor (phase);
+        return p;
+    }
+    double hz (double sampleRate) const { return inc * sampleRate; }
+};
+
+//==============================================================================
 struct Module
 {
     virtual ~Module() = default;
@@ -110,9 +158,9 @@ protected:
 class CrimsonFilter : public Module
 {
 public:
-    explicit CrimsonFilter (APVTS& s)
+    CrimsonFilter (APVTS& s, const Transport& t)
         : mode (raw (s, "filter_mode")), cutoff (raw (s, "filter_cutoff")), reso (raw (s, "filter_reso")),
-          rate (raw (s, "filter_lforate")), depth (raw (s, "filter_lfodepth")) {}
+          rate (raw (s, "filter_lforate")), depth (raw (s, "filter_lfodepth")), sync (raw (s, "filter_sync")) { lfo.transport = &t; }
 
     void prepare (double rate_, int maxBlock) override
     {
@@ -121,7 +169,7 @@ public:
         cutS.reset (sr, 0.04);
         cutS.setCurrentAndTargetValue (*cutoff);
     }
-    void reset() override { filter.reset(); phase = 0.0f; cutS.setCurrentAndTargetValue (*cutoff); }
+    void reset() override { filter.reset(); lfo.phase = 0.0; cutS.setCurrentAndTargetValue (*cutoff); }
 
     void process (float* L, float* R, int n) override
     {
@@ -135,29 +183,26 @@ public:
         }
         filter.setResonance (reso->load());
         cutS.setTargetValue (cutoff->load());
-        const float inc = rate->load() / (float) sr, d = depth->load();
+        lfo.begin ((int) sync->load(), rate->load(), sr);
+        const float d = depth->load();
         const float maxF = (float) (sr * 0.45);
 
         for (int i = 0; i < n; ++i)
         {
             const float base = cutS.getNextValue();
+            const float ph = lfo.next();
             if ((i & 15) == 0)
-            {
-                const float lfo = std::sin (twoPi * phase);
-                filter.setCutoffFrequency (juce::jlimit (20.0f, maxF, base * std::exp2 (d * lfo)));
-            }
-            phase += inc;
-            if (phase >= 1.0f) phase -= 1.0f;
+                filter.setCutoffFrequency (juce::jlimit (20.0f, maxF, base * std::exp2 (d * std::sin (twoPi * ph))));
             L[i] = filter.processSample (0, L[i]);
             R[i] = filter.processSample (1, R[i]);
         }
     }
 
 private:
-    std::atomic<float> *mode, *cutoff, *reso, *rate, *depth;
+    std::atomic<float> *mode, *cutoff, *reso, *rate, *depth, *sync;
     juce::dsp::StateVariableTPTFilter<float> filter;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> cutS;
-    float phase = 0.0f;
+    LfoClock lfo;
     int lastMode = -1;
 };
 
@@ -521,20 +566,22 @@ private:
 class AngelChorus : public Module
 {
 public:
-    explicit AngelChorus (APVTS& s) : rate (raw (s, "chorus_rate")), depth (raw (s, "chorus_depth")), fb (raw (s, "chorus_fb")), mix (raw (s, "chorus_mix")) {}
+    AngelChorus (APVTS& s, const Transport& t) : rate (raw (s, "chorus_rate")), depth (raw (s, "chorus_depth")), fb (raw (s, "chorus_fb")), mix (raw (s, "chorus_mix")), sync (raw (s, "chorus_sync")) { lfo.transport = &t; }
     void prepare (double r, int maxBlock) override { sr = r; chorus.prepare ({ sr, (juce::uint32) maxBlock, 2 }); chorus.setCentreDelay (8.0f); }
     void reset() override { chorus.reset(); }
     void process (float* L, float* R, int n) override
     {
-        chorus.setRate (rate->load()); chorus.setDepth (depth->load());
+        lfo.begin ((int) sync->load(), rate->load(), sr);
+        chorus.setRate ((float) juce::jlimit (0.005, 50.0, lfo.hz (sr))); chorus.setDepth (depth->load());
         chorus.setFeedback (fb->load()); chorus.setMix (mix->load());
         float* chans[2] = { L, R };
         juce::dsp::AudioBlock<float> block (chans, 2, (size_t) n);
         chorus.process (juce::dsp::ProcessContextReplacing<float> (block));
     }
 private:
-    std::atomic<float> *rate, *depth, *fb, *mix;
+    std::atomic<float> *rate, *depth, *fb, *mix, *sync;
     juce::dsp::Chorus<float> chorus;
+    LfoClock lfo;
 };
 
 //==============================================================================
@@ -542,20 +589,22 @@ private:
 class BoilingPhaser : public Module
 {
 public:
-    explicit BoilingPhaser (APVTS& s) : rate (raw (s, "phaser_rate")), depth (raw (s, "phaser_depth")), fb (raw (s, "phaser_fb")), mix (raw (s, "phaser_mix")) {}
+    BoilingPhaser (APVTS& s, const Transport& t) : rate (raw (s, "phaser_rate")), depth (raw (s, "phaser_depth")), fb (raw (s, "phaser_fb")), mix (raw (s, "phaser_mix")), sync (raw (s, "phaser_sync")) { lfo.transport = &t; }
     void prepare (double r, int maxBlock) override { sr = r; phaser.prepare ({ sr, (juce::uint32) maxBlock, 2 }); phaser.setCentreFrequency (1200.0f); }
     void reset() override { phaser.reset(); }
     void process (float* L, float* R, int n) override
     {
-        phaser.setRate (rate->load()); phaser.setDepth (depth->load());
+        lfo.begin ((int) sync->load(), rate->load(), sr);
+        phaser.setRate ((float) juce::jlimit (0.005, 50.0, lfo.hz (sr))); phaser.setDepth (depth->load());
         phaser.setFeedback (fb->load()); phaser.setMix (mix->load());
         float* chans[2] = { L, R };
         juce::dsp::AudioBlock<float> block (chans, 2, (size_t) n);
         phaser.process (juce::dsp::ProcessContextReplacing<float> (block));
     }
 private:
-    std::atomic<float> *rate, *depth, *fb, *mix;
+    std::atomic<float> *rate, *depth, *fb, *mix, *sync;
     juce::dsp::Phaser<float> phaser;
+    LfoClock lfo;
 };
 
 //==============================================================================
@@ -563,28 +612,27 @@ private:
 class TremPan : public Module
 {
 public:
-    explicit TremPan (APVTS& s) : rate (raw (s, "trem_rate")), depth (raw (s, "trem_depth")), shape (raw (s, "trem_shape")), pan (raw (s, "trem_pan")) {}
+    TremPan (APVTS& s, const Transport& t) : rate (raw (s, "trem_rate")), depth (raw (s, "trem_depth")), shape (raw (s, "trem_shape")), pan (raw (s, "trem_pan")), sync (raw (s, "trem_sync")) { lfo.transport = &t; }
     void prepare (double r, int) override { sr = r; depthS.reset (sr, 0.03); panS.reset (sr, 0.03); }
-    void reset() override { phase = 0.0f; }
+    void reset() override { lfo.phase = 0.0; }
     void process (float* L, float* R, int n) override
     {
         depthS.setTargetValue (depth->load()); panS.setTargetValue (pan->load());
-        const float inc = rate->load() / (float) sr;
+        lfo.begin ((int) sync->load(), rate->load(), sr);
         const float k = 1.0f + shape->load() * 12.0f, norm = 1.0f / std::tanh (k);
         for (int i = 0; i < n; ++i)
         {
-            const float lfo = std::tanh (k * std::sin (twoPi * phase)) * norm;
-            phase += inc; if (phase >= 1.0f) phase -= 1.0f;
+            const float lv = std::tanh (k * std::sin (twoPi * lfo.next())) * norm;
             const float d = depthS.getNextValue(), p = panS.getNextValue();
-            const float lfoR = lfo * (1.0f - 2.0f * p);
-            L[i] *= 1.0f - d * (0.5f - 0.5f * lfo);
+            const float lfoR = lv * (1.0f - 2.0f * p);
+            L[i] *= 1.0f - d * (0.5f - 0.5f * lv);
             R[i] *= 1.0f - d * (0.5f - 0.5f * lfoR);
         }
     }
 private:
-    std::atomic<float> *rate, *depth, *shape, *pan;
+    std::atomic<float> *rate, *depth, *shape, *pan, *sync;
     juce::SmoothedValue<float> depthS, panS;
-    float phase = 0.0f;
+    LfoClock lfo;
 };
 
 //==============================================================================
@@ -628,8 +676,8 @@ public:
         {
             const float d = timeS.getNextValue(), f = fbS.getNextValue(), m = mixS.getNextValue();
             float rp = (float) w - d; if (rp < 0.0f) rp += (float) size;
-            const int i0 = (int) rp, i1 = (i0 + 1) % size;
-            const float fr = rp - (float) i0;
+            const int iR = (int) rp, i0 = iR % size, i1 = (i0 + 1) % size;   // rp can round up to exactly len
+            const float fr = (float) (rp - iR);
             const float dl = bl[i0] + (bl[i1] - bl[i0]) * fr;
             const float dr = br[i0] + (br[i1] - br[i0]) * fr;
 

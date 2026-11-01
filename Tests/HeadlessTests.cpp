@@ -120,7 +120,8 @@ void testEachModule()
         { "glitch", "glitch_" }, { "gate", "gate_" }, { "comp", "comp_" }, { "eq", "eq_" }, { "vinyl", "vinyl_" },
         { "tts", "tts_" }, { "pump", "pump_" }, { "spread", "spread_" }, { "trans", "trans_" }, { "wah", "wah_" },
         { "swell", "swell_" }, { "blur", "blur_" }, { "chorus", "chorus_" }, { "phaser", "phaser_" }, { "trem", "trem_" }, { "delay", "delay_" }, { "verb", "verb_" },
-        { "talk", "talk_" }, { "fshift", "fshift_" }, { "flange", "flange_" }, { "rdelay", "rdelay_" } };
+        { "talk", "talk_" }, { "fshift", "fshift_" }, { "flange", "flange_" }, { "rdelay", "rdelay_" },
+        { "ngate", "ngate_" }, { "fuzz", "fuzz_" }, { "tune", "tune_" }, { "voc", "voc_" } };
 
     for (auto& [name, prefix] : modules)
     {
@@ -183,16 +184,19 @@ void testFuzz()
 }
 
 //------------------------------------------------------------------------------
+int presetFrom = 0, presetTo = 1 << 20;
+double presetSeconds = 3.0;
+
 void testPresets()
 {
     std::cout << "[4] Factory presets" << std::endl;
     EvilFXProcessor p;
     p.setPlayConfigDetails (2, 2, kRate, kBlock);
     p.prepareToPlay (kRate, kBlock);
-    for (int i = 0; i < p.getNumPrograms(); ++i)
+    for (int i = presetFrom; i < juce::jmin (presetTo, p.getNumPrograms()); ++i)
     {
         p.setCurrentProgram (i);
-        const auto s = run (p, 3.0, 0.5f);
+        const auto s = run (p, presetSeconds, 0.5f);
         std::cout << "  " << p.getProgramName (i).paddedRight (' ', 24) << " modules " << p.countActiveModules()
                   << "  peak " << db (s.peak).paddedRight (' ', 10) << " rms " << db (s.rms) << "\n";
         check (s.finite && s.peak <= 0.967f, "preset " + p.getProgramName (i));
@@ -205,15 +209,32 @@ void testPresets()
     EvilFXProcessor q; q.setStateInformation (mb.getData(), (int) mb.getSize());
     check (q.countActiveModules() == p.countActiveModules(), "state save/restore");
 
-    // a v1.0 project (31-effect rack string) keeps the same effects in its rack
-    juce::ValueTree old ("EvilFX");
-    old.setProperty ("rack", "0001000000000000000000000010001", nullptr);   // v1.0: EQ, Delay, Speaker Sim
-    const auto upgraded = Rack::get (old);
-    check (upgraded.length() == Rack::numModules, "legacy rack upgraded to the new length");
-    check (Rack::contains (old, 4) && juce::String (Rack::onId (4)) == "eq_on", "legacy rack keeps EQ");
-    check (Rack::contains (old, 30) && juce::String (Rack::onId (30)) == "delay_on", "legacy rack keeps Delay");
-    check (Rack::contains (old, 34) && juce::String (Rack::onId (34)) == "spk_on", "legacy rack keeps Speaker Sim");
-    check (upgraded.retainCharacters ("1").length() == 3, "legacy rack adds nothing new");
+    // projects from older versions (rack stored as 0/1 flags) keep the same effects in the rack
+    for (auto legacy : { juce::String ("0001000000000000000000000010001"),             // v1.0: EQ, Delay, Speaker Sim
+                         juce::String ("00001000000000000000000000000010001") })       // v1.1 preview: same three
+    {
+        juce::ValueTree old ("EvilFX");
+        old.setProperty ("rack", legacy, nullptr);
+        const auto flags = Rack::get (old);
+        check (flags.length() == Rack::numModules, "legacy rack upgraded to the new length");
+        check (Rack::contains (old, Rack::indexOf ("eq_on")), "legacy rack keeps EQ");
+        check (Rack::contains (old, Rack::indexOf ("delay_on")), "legacy rack keeps Delay");
+        check (Rack::contains (old, Rack::indexOf ("spk_on")), "legacy rack keeps Speaker Sim");
+        check (flags.retainCharacters ("1").length() == 3, "legacy rack adds nothing new");
+        Rack::upgrade (old);
+        check (old.getProperty ("rack").toString() == "eq_on,delay_on,spk_on", "legacy rack rewritten as IDs");
+    }
+
+    // an order saved before some effect existed: unknown IDs dropped, missing ones slot in
+    {
+        juce::ValueTree t ("EvilFX");
+        t.setProperty ("order", "verb_on,bogus_on,trans_on", nullptr);
+        const auto o = Rack::getOrder (t);
+        bool perm = o.size() == Rack::numModules;
+        for (int i = 0; i < Rack::numModules; ++i) perm = perm && o.contains (i);
+        check (perm, "partial order normalised to a full permutation");
+        check (o.indexOf (Rack::indexOf ("verb_on")) < o.indexOf (Rack::indexOf ("trans_on")), "saved order kept");
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -289,6 +310,212 @@ void testNewEffects()
     }
 }
 
+//------------------------------------------------------------------------------
+void prepare (EvilFXProcessor& p) { p.setPlayConfigDetails (2, 2, kRate, kBlock); p.prepareToPlay (kRate, kBlock); resetAll (p); }
+
+std::vector<float> renderMono (EvilFXProcessor& p, std::function<float (int)> gen, int total)
+{
+    std::vector<float> out ((size_t) total);
+    juce::AudioBuffer<float> buf (2, kBlock); juce::MidiBuffer midi;
+    for (int start = 0; start < total; start += kBlock)
+    {
+        const int n = juce::jmin (kBlock, total - start);
+        buf.setSize (2, n, false, false, true);
+        for (int i = 0; i < n; ++i) { const float v = gen (start + i); buf.setSample (0, i, v); buf.setSample (1, i, v); }
+        p.processBlock (buf, midi);
+        for (int i = 0; i < n; ++i) out[(size_t) (start + i)] = buf.getSample (0, i);
+    }
+    return out;
+}
+
+// frequency from zero crossings over the tail of the signal
+double zcFreq (const std::vector<float>& y, int from)
+{
+    int first = -1, last = -1, count = 0;
+    for (int i = from + 1; i < (int) y.size(); ++i)
+        if (y[(size_t) i - 1] <= 0.0f && y[(size_t) i] > 0.0f)
+        {
+            if (first < 0) first = i; else ++count;
+            last = i;
+        }
+    return count > 0 ? count * kRate / (double) (last - first) : 0.0;
+}
+
+void testWorkflow()
+{
+    std::cout << "[7] Chain order, undo, A/B, sidechain, Auto-Tune, Vocoder" << std::endl;
+    auto sine = [] (double f, float a = 0.4f) { return [f, a] (int i) { return a * (float) std::sin (juce::MathConstants<double>::twoPi * f * i / kRate); }; };
+
+    {   // the order the chain runs in changes the sound: fuzz -> reverse delay vs reverse delay -> fuzz
+        auto render = [&] (bool fuzzFirst)
+        {
+            EvilFXProcessor p; prepare (p);
+            setParam (p, "fuzz_on", 1); setParam (p, "fuzz_drive", 30);
+            setParam (p, "rdelay_on", 1); setParam (p, "rdelay_mix", 1); setParam (p, "rdelay_sync", 0); setParam (p, "rdelay_time", 300);
+            setParam (p, "limiter", 0);
+            auto o = Rack::defaultOrder();
+            if (! fuzzFirst) o.move (o.indexOf (Rack::indexOf ("rdelay_on")), 0);
+            Rack::setOrder (p.apvts.state, o);
+            return renderMono (p, [] (int i) { return 0.5f * (float) std::sin (i * 0.05) * (float) ((i / 4000) % 2); }, (int) kRate);
+        };
+        const auto a = render (true), b = render (false);
+        double diff = 0; for (size_t i = 0; i < a.size(); ++i) diff += std::abs (a[i] - b[i]);
+        std::cout << "  order A vs B mean difference " << juce::String (diff / (double) a.size(), 4) << "\n";
+        check (diff / (double) a.size() > 0.01, "changing the chain order changes the sound");
+
+        EvilFXProcessor p; prepare (p);
+        auto o = Rack::defaultOrder(); o.move (5, 30);
+        Rack::setOrder (p.apvts.state, o);
+        juce::MemoryBlock mb; p.getStateInformation (mb);
+        EvilFXProcessor q; q.setStateInformation (mb.getData(), (int) mb.getSize());
+        check (q.getChainOrder() == o, "chain order survives save/load");
+    }
+
+    {   // undo / redo a knob move and a rack change
+        EvilFXProcessor p; prepare (p);
+        p.undoManager.clearUndoHistory();
+        p.undoManager.beginNewTransaction();
+        setParam (p, "verb_mix", 0.9f);
+        p.apvts.copyState();   // flushes the change into the tree (+ history)
+        p.undoManager.beginNewTransaction();
+        Rack::set (p.apvts.state, Rack::indexOf ("verb_on"), true, &p.undoManager);
+        check (Rack::contains (p.apvts.state, Rack::indexOf ("verb_on")), "rack add");
+        p.undoManager.undo();
+        check (! Rack::contains (p.apvts.state, Rack::indexOf ("verb_on")), "undo rack add");
+        p.undoManager.undo();
+        const float v = p.apvts.getParameter ("verb_mix")->convertFrom0to1 (p.apvts.getParameter ("verb_mix")->getValue());
+        check (std::abs (v - 0.25f) < 0.01f, "undo knob move (got " + juce::String (v) + ")");
+        p.undoManager.redo();
+        const float r = p.apvts.getParameter ("verb_mix")->convertFrom0to1 (p.apvts.getParameter ("verb_mix")->getValue());
+        check (std::abs (r - 0.9f) < 0.01f, "redo knob move");
+    }
+
+    {   // A/B: two independent sounds, survive save/load
+        EvilFXProcessor p; prepare (p);
+        p.setCurrentProgram (5);
+        const auto nameA = p.apvts.state.getProperty ("presetName").toString();
+        p.switchAB();                       // B starts as a copy of A
+        p.setCurrentProgram (12);
+        const auto nameB = p.apvts.state.getProperty ("presetName").toString();
+        p.switchAB();
+        check (p.apvts.state.getProperty ("presetName").toString() == nameA, "A/B: back to A");
+        juce::MemoryBlock mb; p.getStateInformation (mb);
+        EvilFXProcessor q; prepare (q); q.setStateInformation (mb.getData(), (int) mb.getSize());
+        q.switchAB();
+        check (q.apvts.state.getProperty ("presetName").toString() == nameB, "A/B: B restored from saved state");
+    }
+
+    {   // sidechain pump: ducks when the sidechain hits, not otherwise
+        EvilFXProcessor p;
+        auto layout = p.getBusesLayout();
+        layout.inputBuses.getReference (1) = juce::AudioChannelSet::stereo();
+        check (p.setBusesLayout (layout), "sidechain bus can be enabled");
+        p.setRateAndBufferSizeDetails (kRate, kBlock);
+        p.prepareToPlay (kRate, kBlock);
+        resetAll (p);
+        setParam (p, "pump_on", 1); setParam (p, "pump_mode", 1); setParam (p, "pump_depth", 1); setParam (p, "limiter", 0);
+        juce::AudioBuffer<float> buf (4, kBlock); juce::MidiBuffer midi;
+        double loudQuiet[2] = { 0, 0 };
+        for (int b = 0; b < 200; ++b)
+        {
+            const bool kick = (b / 20) % 2 == 1;
+            for (int i = 0; i < kBlock; ++i)
+            {
+                const float x = 0.3f * (float) std::sin (0.03 * (b * kBlock + i));
+                buf.setSample (0, i, x); buf.setSample (1, i, x);
+                const float k = kick ? 0.8f : 0.0f;
+                buf.setSample (2, i, k); buf.setSample (3, i, k);
+            }
+            p.processBlock (buf, midi);
+            if (b % 20 > 5)
+                for (int i = 0; i < kBlock; ++i) loudQuiet[kick ? 1 : 0] += std::abs (buf.getSample (0, i));
+        }
+        std::cout << "  sidechain pump: level without kick " << juce::String (loudQuiet[0], 1) << ", with kick " << juce::String (loudQuiet[1], 1) << "\n";
+        check (p.sidechainConnected.load(), "processor sees the sidechain");
+        check (loudQuiet[1] < loudQuiet[0] * 0.2, "sidechain pump ducks under the sidechain signal");
+    }
+
+    for (auto [inHz, scale, wantHz] : { std::tuple<double, int, double> { 452.0, 0, 440.0 },     // chromatic: nearest is A4
+                                        std::tuple<double, int, double> { 285.0, 1, 293.66 },    // C major: D4
+                                        std::tuple<double, int, double> { 320.0, 1, 329.63 } })  // C major: E4
+    {
+        EvilFXProcessor p; prepare (p);
+        setParam (p, "tune_on", 1); setParam (p, "tune_scale", (float) scale); setParam (p, "tune_speed", 0); setParam (p, "limiter", 0);
+        const auto y = renderMono (p, sine (inHz), (int) kRate);
+        const double f = zcFreq (y, (int) (kRate * 0.4));
+        std::cout << "  auto-tune " << juce::String (inHz, 1) << " Hz -> " << juce::String (f, 1) << " Hz (want " << juce::String (wantHz, 1) << ")\n";
+        check (std::abs (1200.0 * std::log2 (f / wantHz)) < 15.0, "auto-tune lands within 15 cents of the target note");
+    }
+
+    {
+        EvilFXProcessor p; prepare (p);
+        setParam (p, "voc_on", 1); setParam (p, "voc_mix", 1); setParam (p, "limiter", 0);
+        juce::Random r (3);
+        const auto y = renderMono (p, [&r] (int i) { return (r.nextFloat() - 0.5f) * 0.6f * (float) (0.5 + 0.5 * std::sin (i * 0.0005)); }, (int) kRate);
+        double e = 0; for (auto v : y) e += v * v;
+        const double rms = std::sqrt (e / (double) y.size());
+        std::cout << "  vocoder rms " << db ((float) rms) << "\n";
+        check (rms > 0.01, "vocoder produces sound from a chord carrier");
+    }
+}
+
+//------------------------------------------------------------------------------
+// Drives the real editor: drag the first card onto the third slot, check the
+// processor's chain order followed, then undo it.
+void testEditorReorder()
+{
+    std::cout << "[9] Editor: drag to reorder + undo" << std::endl;
+    EvilFXProcessor p; prepare (p);
+    for (auto* id : { "trans_on", "eq_on", "fuzz_on", "chorus_on", "verb_on" }) setParam (p, id, 1);
+    Rack::syncFromParams (p.apvts);
+    std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
+    ed->setSize (EvilFXEditor::baseW, EvilFXEditor::baseH);
+
+    auto visibleCards = [&ed]
+    {
+        juce::Array<aero::ModuleCard*> v;
+        std::function<void (juce::Component&)> walk = [&] (juce::Component& c)
+        {
+            for (auto* ch : c.getChildren())
+            {
+                if (auto* mc = dynamic_cast<aero::ModuleCard*> (ch)) { if (mc->isVisible() && mc->getSpec().powerId != nullptr) v.add (mc); }
+                else walk (*ch);
+            }
+        };
+        walk (*ed);
+        std::sort (v.begin(), v.end(), [] (auto* a, auto* b) { return a->getY() != b->getY() ? a->getY() < b->getY() : a->getX() < b->getX(); });
+        return v;
+    };
+    auto rackIds = [&p]
+    {
+        juce::StringArray ids;
+        const auto rack = Rack::get (p.apvts.state);
+        for (int m : p.getChainOrder()) if (rack[m] == '1') ids.add (Rack::onId (m));
+        return ids.joinIntoString (",");
+    };
+
+    const auto before = rackIds();
+    auto cards = visibleCards();
+    check (cards.size() == 5, "five cards visible");
+    if (cards.size() == 5)
+    {
+        auto* first = cards[0];
+        const auto target = cards[2]->getPosition();
+        p.undoManager.beginNewTransaction();
+        first->onDragStart();
+        for (int k = 1; k <= 10; ++k)   // glide across like a mouse would
+            first->onDragMove (first->getPosition() + (target - first->getPosition()) * k / 10);
+        first->onDragEnd();
+        const auto after = rackIds();
+        std::cout << "  before: " << before << "\n  after:  " << after << "\n";
+        check (after == "eq_on,fuzz_on,trans_on,chorus_on,verb_on", "dragging card 1 onto slot 3 reorders the chain");
+        auto now = visibleCards();
+        check (now.size() == 5 && juce::String (now[2]->getSpec().powerId) == "trans_on", "cards laid out in the new order");
+        p.undoManager.undo();
+        check (rackIds() == before, "undo puts the order back");
+    }
+}
+
 // CPU cost of each module on its own, as % of one core in real time (48 kHz stereo, 512 blocks)
 void bench()
 {
@@ -327,7 +554,14 @@ void bench()
     std::cout << "  " << juce::String ("ALL ON").paddedRight (' ', 18) << juce::String (all, 3) << " %" << std::endl;
 }
 
-void snapshot (const juce::File& file, int theme)
+template <typename T> T* findChild (juce::Component& root)
+{
+    if (auto* t = dynamic_cast<T*> (&root)) return t;
+    for (auto* c : root.getChildren()) if (auto* t = findChild<T> (*c)) return t;
+    return nullptr;
+}
+
+void snapshot (const juce::File& file, int theme, bool withBrowser = false)
 {
     juce::ScopedJuceInitialiser_GUI gui;
     EvilFXProcessor p;
@@ -346,12 +580,20 @@ void snapshot (const juce::File& file, int theme)
     run (p, 1.0);
     std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
     ed->setSize (EvilFXEditor::baseW, EvilFXEditor::baseH);
+    if (withBrowser)
+        if (auto* b = findChild<aero::PresetBrowser> (*ed))
+        {
+            Presets::saveFavourites ({ Presets::favKeyFactory ("Hard Tune (C Major)"), Presets::favKeyFactory ("Classic Vocoder") });
+            b->refresh();
+            b->setVisible (true);
+            b->toFront (false);
+        }
     auto img = ed->createComponentSnapshot (ed->getLocalBounds(), true, 1.0f);
     file.deleteFile();
     juce::FileOutputStream os (file);
     juce::PNGImageFormat png;
     check (png.writeImageToStream (img, os), "snapshot written");
-    std::cout << "[6] UI snapshot -> " << file.getFullPathName() << "" << std::endl;
+    std::cout << "[8] UI snapshot -> " << file.getFullPathName() << "" << std::endl;
 }
 } // namespace
 
@@ -374,6 +616,24 @@ void renderIcon (const juce::File& file, int size)
 
 int main (int argc, char** argv)
 {
+    if (argc > 2 && juce::String (argv[1]) == "--mascot")   // the animation states, side by side
+    {
+        juce::ScopedJuceInitialiser_GUI gui;
+        const int cell = 220;
+        const std::pair<float, float> states[] { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 0.0f, 0.5f }, { 0.0f, 1.0f } };
+        juce::Image img (juce::Image::ARGB, cell * 4, cell, true);
+        {
+            juce::Graphics g (img);
+            g.fillAll (juce::Colour (0xffeaf2ff));
+            for (int k = 0; k < 4; ++k)
+                aero::drawSmiley (g, { cell * k + cell * 0.42f, cell * 0.6f }, cell / 3.6f, states[k].first, states[k].second);
+        }
+        juce::File f = juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]);
+        f.deleteFile();
+        juce::FileOutputStream os (f);
+        juce::PNGImageFormat().writeImageToStream (img, os);
+        return 0;
+    }
     if (argc > 2 && juce::String (argv[1]) == "--icon")
     {
         renderIcon (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]), argc > 3 ? juce::String (argv[3]).getIntValue() : 512);
@@ -381,7 +641,34 @@ int main (int argc, char** argv)
     }
     if (argc > 2 && juce::String (argv[1]) == "--snapshot")
     {
-        snapshot (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]), argc > 3 ? juce::String (argv[3]).getIntValue() : 0);
+        snapshot (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]), argc > 3 ? juce::String (argv[3]).getIntValue() : 0,
+                  argc > 4 && juce::String (argv[4]) == "browser");
+        return failures;
+    }
+    if (argc > 3 && juce::String (argv[1]) == "--module")   // debugging aid: --module prefix mode(0 default,1 min,2 max)
+    {
+        juce::ScopedJuceInitialiser_GUI g;
+        const juce::String prefix (argv[2]);
+        const int mode = juce::String (argv[3]).getIntValue();
+        EvilFXProcessor p;
+        p.setPlayConfigDetails (2, 2, kRate, kBlock);
+        p.prepareToPlay (kRate, kBlock);
+        resetAll (p);
+        if (mode > 0)
+            for (auto* prm : p.getParameters())
+                if (auto* rp = dynamic_cast<juce::RangedAudioParameter*> (prm))
+                    if (rp->getParameterID().startsWith (prefix)) rp->setValueNotifyingHost (mode == 1 ? 0.0f : 1.0f);
+        setParam (p, prefix + "on", 1);
+        const auto st = run (p, argc > 4 ? juce::String (argv[4]).getDoubleValue() : 1.0);
+        std::cout << prefix << " peak " << db (st.peak) << " rms " << db (st.rms) << std::endl;
+        return 0;
+    }
+    if (argc > 3 && juce::String (argv[1]) == "--presets")   // debugging aid: --presets from to [seconds]
+    {
+        juce::ScopedJuceInitialiser_GUI g;
+        presetFrom = juce::String (argv[2]).getIntValue(); presetTo = juce::String (argv[3]).getIntValue();
+        if (argc > 4) presetSeconds = juce::String (argv[4]).getDoubleValue();
+        testPresets();
         return failures;
     }
     if (argc > 1 && juce::String (argv[1]) == "--bench")
@@ -396,6 +683,8 @@ int main (int argc, char** argv)
     testFuzz();
     testPresets();
     testNewEffects();
+    testWorkflow();
+    testEditorReorder();
     std::cout << (failures == 0 ? "\nALL TESTS PASSED\n" : "\nFAILURES: " + std::to_string (failures) + "\n");
     return failures == 0 ? 0 : 1;
 }

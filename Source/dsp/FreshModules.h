@@ -13,15 +13,15 @@ namespace xfx
 class TalkBox : public Module
 {
 public:
-    explicit TalkBox (APVTS& s)
+    TalkBox (APVTS& s, const Transport& t)
         : vowel (raw (s, "talk_vowel")), rate (raw (s, "talk_rate")), sweep (raw (s, "talk_sweep")),
-          mix (raw (s, "talk_mix")), voice (raw (s, "talk_voice")) {}
+          mix (raw (s, "talk_mix")), voice (raw (s, "talk_voice")), sync (raw (s, "talk_sync")) { lfo.transport = &t; }
 
     void prepare (double r, int) override { sr = r; prepareMix (sr); vowelS.reset (sr, 0.05); reset(); }
     void reset() override
     {
         for (auto& c : ch) for (auto& f : c) f.reset();
-        phase = 0.0f; countdown = 0;
+        lfo.phase = 0.0; countdown = 0;
         vowelS.setCurrentAndTargetValue (vowel->load());
     }
 
@@ -31,12 +31,13 @@ public:
         vowelS.setTargetValue (vowel->load());
         static constexpr float voiceScale[] { 0.8f, 1.0f, 1.28f };
         const float scale = voiceScale[juce::jlimit (0, 2, (int) voice->load())];
-        const float inc = rate->load() / (float) sr, sw = sweep->load();
+        lfo.begin ((int) sync->load(), rate->load(), sr);
+        const float sw = sweep->load();
 
         for (int i = 0; i < n; ++i)
         {
             const float v = vowelS.getNextValue();
-            phase += inc; if (phase >= 1.0f) phase -= 1.0f;
+            const float phase = lfo.next();
             if (--countdown <= 0)   // formants only need updating every 32 samples
             {
                 countdown = 32;
@@ -74,10 +75,10 @@ private:
         }
     }
 
-    std::atomic<float> *vowel, *rate, *sweep, *mix, *voice;
+    std::atomic<float> *vowel, *rate, *sweep, *mix, *voice, *sync;
     std::array<std::array<Biquad, 3>, 2> ch;
     juce::SmoothedValue<float> vowelS;
-    float phase = 0.0f;
+    LfoClock lfo;
     int countdown = 0;
 };
 
@@ -162,7 +163,7 @@ private:
 class Flanger : public Module
 {
 public:
-    explicit Flanger (APVTS& s) : rate (raw (s, "flange_rate")), depth (raw (s, "flange_depth")), fb (raw (s, "flange_fb")), mix (raw (s, "flange_mix")) {}
+    Flanger (APVTS& s, const Transport& t) : rate (raw (s, "flange_rate")), depth (raw (s, "flange_depth")), fb (raw (s, "flange_fb")), mix (raw (s, "flange_mix")), sync (raw (s, "flange_sync")) { lfo.transport = &t; }
 
     void prepare (double r, int) override
     {
@@ -172,20 +173,21 @@ public:
         depthS.reset (sr, 0.05);
         reset();
     }
-    void reset() override { buf.clear(); w = 0; phase = 0.0f; depthS.setCurrentAndTargetValue (depth->load()); }
+    void reset() override { buf.clear(); w = 0; lfo.phase = 0.0; depthS.setCurrentAndTargetValue (depth->load()); }
 
     void process (float* L, float* R, int n) override
     {
         mixS.setTargetValue (mix->load());
         depthS.setTargetValue (depth->load());
-        const float inc = rate->load() / (float) sr, f = fb->load();
+        lfo.begin ((int) sync->load(), rate->load(), sr);
+        const float f = fb->load();
         const float ms = (float) sr * 0.001f, minD = 0.2f * ms, maxD = 7.0f * ms;
         float* io[2] = { L, R };
         float* b[2] = { buf.getWritePointer (0), buf.getWritePointer (1) };
 
         for (int i = 0; i < n; ++i)
         {
-            phase += inc; if (phase >= 1.0f) phase -= 1.0f;
+            const float phase = lfo.next();
             const float d = depthS.getNextValue(), m = mixS.getNextValue();
             for (int c = 0; c < 2; ++c)
             {
@@ -194,8 +196,8 @@ public:
                 const float lfo = tri * tri * (3.0f - 2.0f * tri);                  // smoothed corners
                 const float delay = minD + (maxD - minD) * d * lfo + 0.5f;
                 float rp = (float) w - delay; if (rp < 0.0f) rp += (float) len;
-                const int i0 = (int) rp, i1 = (i0 + 1) % len;
-                const float fr = rp - (float) i0;
+                const int iR = (int) rp, i0 = iR % len, i1 = (i0 + 1) % len;   // rp can round up to exactly len
+                const float fr = (float) (rp - iR);
                 const float del = b[c][i0] + (b[c][i1] - b[c][i0]) * fr;
                 b[c][w] = std::tanh (io[c][i] + f * del);
                 const float wet = 0.5f * (io[c][i] + (f < 0.0f ? -del : del));      // through-zero-ish null on negative fb
@@ -206,11 +208,11 @@ public:
     }
 
 private:
-    std::atomic<float> *rate, *depth, *fb, *mix;
+    std::atomic<float> *rate, *depth, *fb, *mix, *sync;
     juce::AudioBuffer<float> buf;
     juce::SmoothedValue<float> depthS;
+    LfoClock lfo;
     int len = 1, w = 0;
-    float phase = 0.0f;
 };
 
 //==============================================================================
@@ -257,8 +259,8 @@ public:
                 const float win = std::sin (juce::MathConstants<float>::pi * p);
                 const float delay = 2.0f * p * N + 1.0f;   // grows 2x as fast as time -> plays backwards
                 float rp = (float) w - delay; while (rp < 0.0f) rp += (float) len;
-                const int i0 = (int) rp, i1 = (i0 + 1) % len;
-                const float fr = rp - (float) i0;
+                const int iR = (int) rp, i0 = iR % len, i1 = (i0 + 1) % len;   // rp can round up to exactly len
+                const float fr = (float) (rp - iR);
                 for (int c = 0; c < 2; ++c) out[c] += win * win * (b[c][i0] + (b[c][i1] - b[c][i0]) * fr);
             }
             const float m = mixS.getNextValue();

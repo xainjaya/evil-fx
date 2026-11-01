@@ -65,6 +65,29 @@ namespace Params
         return n;
     }
 
+    // tempo sync for the LFOs (index 0 = Free, uses the Rate knob in Hz)
+    inline const juce::StringArray& lfoSyncNames()
+    {
+        static const juce::StringArray n { "Free", "4 Bars", "2 Bars", "1 Bar", "1/2", "1/4", "1/4 T", "1/8", "1/8 T", "1/16" };
+        return n;
+    }
+    inline double lfoSyncBeats (int i)   // one LFO cycle, in quarter notes
+    {
+        static const double b[] { 4.0, 16.0, 8.0, 4.0, 2.0, 1.0, 2.0 / 3.0, 0.5, 1.0 / 3.0, 0.25 };
+        return b[juce::jlimit (0, 9, i)];
+    }
+
+    inline const juce::StringArray& noteNames()
+    {
+        static const juce::StringArray n { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+        return n;
+    }
+    inline const juce::StringArray& scaleNames()
+    {
+        static const juce::StringArray n { "Chromatic", "Major", "Minor", "Pentatonic", "Minor Pent.", "Blues" };
+        return n;
+    }
+
     inline const juce::StringArray& codecRateNames()
     {
         static const juce::StringArray n { "22 kHz", "16 kHz", "11 kHz", "8 kHz", "5.5 kHz" };
@@ -97,6 +120,7 @@ namespace Params
         flt ("filter_reso",     "Filter Resonance", skewed (0.5f, 10.0f, 2.0f), 0.9f, plain());
         flt ("filter_lforate",  "Filter LFO Rate",  skewed (0.01f, 10.0f, 1.0f), 0.3f, hz());
         flt ("filter_lfodepth", "Filter LFO Depth", lin (0.0f, 4.0f), 0.0f, oct());
+        p.push_back (std::make_unique<APC> (pid ("filter_sync"), "Filter LFO Sync", lfoSyncNames(), 0));
 
         // Saturation (saturation)
         onOff ("gloss_on", "Saturation On");
@@ -228,6 +252,7 @@ namespace Params
         p.push_back (std::make_unique<APC> (pid ("pump_div"), "Sidechain Rate", juce::StringArray { "1/2", "1/4", "1/8", "1/16" }, 1));
         flt ("pump_depth", "Sidechain Depth", lin (0.0f, 1.0f), 0.7f, pct());
         flt ("pump_shape", "Sidechain Release", lin (0.0f, 1.0f), 0.4f, pct());
+        p.push_back (std::make_unique<APC> (pid ("pump_mode"), "Sidechain Source", juce::StringArray { "Tempo", "Sidechain In" }, 0));
 
         // Stereo Spread — mono-safe widener / doubler
         onOff ("spread_on", "Stereo Widener On");
@@ -274,6 +299,7 @@ namespace Params
         flt ("chorus_depth", "Chorus Depth",    lin (0.0f, 1.0f), 0.4f, pct());
         flt ("chorus_fb",    "Chorus Feedback", lin (-0.9f, 0.9f), 0.0f, bip());
         flt ("chorus_mix",   "Chorus Mix",      lin (0.0f, 1.0f), 0.5f, pct());
+        p.push_back (std::make_unique<APC> (pid ("chorus_sync"), "Chorus Sync", lfoSyncNames(), 0));
 
         // Phaser
         onOff ("phaser_on", "Phaser On");
@@ -281,6 +307,7 @@ namespace Params
         flt ("phaser_depth", "Phaser Depth",    lin (0.0f, 1.0f), 0.6f, pct());
         flt ("phaser_fb",    "Phaser Feedback", lin (-0.9f, 0.9f), 0.4f, bip());
         flt ("phaser_mix",   "Phaser Mix",      lin (0.0f, 1.0f), 0.5f, pct());
+        p.push_back (std::make_unique<APC> (pid ("phaser_sync"), "Phaser Sync", lfoSyncNames(), 0));
 
         // 9 Trem / Pan
         onOff ("trem_on", "Tremolo On");
@@ -288,6 +315,7 @@ namespace Params
         flt ("trem_depth", "Tremolo Depth", lin (0.0f, 1.0f), 0.5f, pct());
         flt ("trem_shape", "Tremolo Shape", lin (0.0f, 1.0f), 0.0f, pct());
         flt ("trem_pan",   "Tremolo Pan",   lin (0.0f, 1.0f), 0.0f, pct());
+        p.push_back (std::make_unique<APC> (pid ("trem_sync"), "Tremolo Sync", lfoSyncNames(), 0));
 
         // Delay
         onOff ("delay_on", "Delay On");
@@ -317,6 +345,7 @@ namespace Params
         flt ("talk_sweep", "Talk Box Sweep", lin (0.0f, 1.0f), 0.6f, pct());
         flt ("talk_mix",   "Talk Box Mix",   lin (0.0f, 1.0f), 1.0f, pct());
         p.push_back (std::make_unique<APC> (pid ("talk_voice"), "Talk Box Voice", juce::StringArray { "Deep", "Normal", "High" }, 1));
+        p.push_back (std::make_unique<APC> (pid ("talk_sync"), "Talk Box Sync", lfoSyncNames(), 0));
 
         // Frequency Shifter — every partial moves by the same number of Hz
         onOff ("fshift_on", "Freq Shifter On");
@@ -333,6 +362,7 @@ namespace Params
         flt ("flange_depth", "Flanger Depth",    lin (0.0f, 1.0f), 0.7f, pct());
         flt ("flange_fb",    "Flanger Feedback", lin (-0.95f, 0.95f), 0.6f, bip());
         flt ("flange_mix",   "Flanger Mix",      lin (0.0f, 1.0f), 0.6f, pct());
+        p.push_back (std::make_unique<APC> (pid ("flange_sync"), "Flanger Sync", lfoSyncNames(), 0));
 
         // Reverse Delay — plays chunks backwards, tempo-syncable
         onOff ("rdelay_on", "Reverse Delay On");
@@ -340,6 +370,44 @@ namespace Params
         flt ("rdelay_time", "Reverse Delay Time",     skewed (60.0f, 2000.0f, 500.0f), 500.0f, ms());
         flt ("rdelay_fb",   "Reverse Delay Feedback", lin (0.0f, 0.9f), 0.3f, pct());
         flt ("rdelay_mix",  "Reverse Delay Mix",      lin (0.0f, 1.0f), 0.4f, pct());
+
+        // Noise Gate
+        onOff ("ngate_on", "Noise Gate On");
+        flt ("ngate_thresh",  "Gate Threshold", lin (-80.0f, 0.0f), -45.0f, db());
+        flt ("ngate_range",   "Gate Range",     lin (0.0f, 80.0f), 60.0f,
+             Attr().withStringFromValueFunction ([] (float v, int) { return "-" + juce::String (juce::roundToInt (v)) + " dB"; }));
+        flt ("ngate_release", "Gate Release",   skewed (5.0f, 1000.0f, 120.0f), 120.0f, ms());
+        p.push_back (std::make_unique<APC> (pid ("ngate_key"), "Gate Key", juce::StringArray { "Input", "Sidechain In" }, 0));
+
+        // Fuzz — proper distortion, four flavours
+        onOff ("fuzz_on", "Fuzz On");
+        p.push_back (std::make_unique<APC> (pid ("fuzz_type"), "Fuzz Type", juce::StringArray { "Fuzz", "Hard Clip", "Octave Up", "Wavefolder" }, 0));
+        flt ("fuzz_drive", "Fuzz Drive", lin (0.0f, 48.0f), 20.0f, db());
+        flt ("fuzz_tone",  "Fuzz Tone",  skewed (400.0f, 14000.0f, 3000.0f), 4000.0f, hz());
+        flt ("fuzz_gate",  "Fuzz Gate",  lin (0.0f, 1.0f), 0.1f, pct());
+        flt ("fuzz_mix",   "Fuzz Mix",   lin (0.0f, 1.0f), 1.0f, pct());
+
+        // Auto-Tune — pitch correction to a key and scale (0 speed = hard robot snap)
+        onOff ("tune_on", "Auto-Tune On");
+        p.push_back (std::make_unique<APC> (pid ("tune_key"), "Auto-Tune Key", noteNames(), 0));
+        p.push_back (std::make_unique<APC> (pid ("tune_scale"), "Auto-Tune Scale", scaleNames(), 0));
+        flt ("tune_speed",  "Auto-Tune Speed",  lin (0.0f, 1.0f), 0.0f,
+             Attr().withStringFromValueFunction ([] (float v, int) { return v < 0.005f ? juce::String ("Robot") : juce::String (juce::roundToInt (v * 400.0f)) + " ms"; }));
+        flt ("tune_amount", "Auto-Tune Amount", lin (0.0f, 1.0f), 1.0f, pct());
+        flt ("tune_mix",    "Auto-Tune Mix",    lin (0.0f, 1.0f), 1.0f, pct());
+
+        // Vocoder — your audio "speaks" through a synth (or the sidechain)
+        onOff ("voc_on", "Vocoder On");
+        p.push_back (std::make_unique<APC> (pid ("voc_carrier"), "Vocoder Carrier", juce::StringArray { "Saw", "Chord", "Noise", "Sidechain In" }, 1));
+        flt ("voc_note", "Vocoder Note", juce::NormalisableRange<float> (24.0f, 72.0f, 1.0f), 45.0f,
+             Attr().withStringFromValueFunction ([] (float v, int)
+             {
+                 const int n = juce::roundToInt (v);
+                 return noteNames()[n % 12] + juce::String (n / 12 - 1);
+             }));
+        flt ("voc_formant", "Vocoder Formant", lin (-1.0f, 1.0f), 0.0f, oct());
+        flt ("voc_release", "Vocoder Release", skewed (5.0f, 300.0f, 40.0f), 40.0f, ms());
+        flt ("voc_mix",     "Vocoder Mix",     lin (0.0f, 1.0f), 0.85f, pct());
 
         // Master
         flt ("in_gain",  "Input Gain",   lin (-24.0f, 24.0f), 0.0f, db());

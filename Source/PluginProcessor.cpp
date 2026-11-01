@@ -5,25 +5,30 @@ using namespace xfx;
 
 EvilFXProcessor::EvilFXProcessor()
     : AudioProcessor (BusesProperties()
-                          .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                          .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-      apvts (*this, nullptr, "EvilFX", Params::createLayout())
+                          .withInput  ("Input",     juce::AudioChannelSet::stereo(), true)
+                          .withOutput ("Output",    juce::AudioChannelSet::stereo(), true)
+                          .withInput  ("Sidechain", juce::AudioChannelSet::stereo(), false)),
+      apvts (*this, &undoManager, "EvilFX", Params::createLayout())
 {
     auto add = [this] (auto module, const char* onId)
     {
-        jassert (juce::String (onId) == Rack::onId ((int) slots.size()));   // chain order must match Rack.h
+        jassert (juce::String (onId) == Rack::onId ((int) slots.size()));   // slot order must match Rack.h
         slots.push_back (std::make_unique<Slot> (std::move (module), raw (apvts, onId)));
     };
-    // must match the order in Rack.h
+    // must match the order in Rack.h (this is also the default chain order)
+    add (std::make_unique<NoiseGate>      (apvts, sideChain), "ngate_on");
     add (std::make_unique<TransientShaper> (apvts), "trans_on");
-    add (std::make_unique<CrimsonFilter>  (apvts), "filter_on");
+    add (std::make_unique<AutoTune>       (apvts), "tune_on");
+    add (std::make_unique<CrimsonFilter>  (apvts, transport), "filter_on");
     add (std::make_unique<AutoWah>        (apvts), "wah_on");
-    add (std::make_unique<TalkBox>        (apvts), "talk_on");
+    add (std::make_unique<TalkBox>        (apvts, transport), "talk_on");
     add (std::make_unique<GlassEQ>        (apvts), "eq_on");
     add (std::make_unique<ScorchDrive>    (apvts), "gloss_on");
+    add (std::make_unique<xfx::Fuzz>      (apvts), "fuzz_on");
     add (std::make_unique<Nightcore>      (apvts), "pitch_on");
     add (std::make_unique<Ringtone>       (apvts), "ring_on");
     add (std::make_unique<FreqShifter>    (apvts), "fshift_on");
+    add (std::make_unique<xfx::Vocoder>   (apvts, sideChain), "voc_on");
     add (std::make_unique<TTSRobot>       (apvts), "tts_on");
     add (std::make_unique<CodecSim>       (apvts), "codec_on");
     add (std::make_unique<BitCrush>       (apvts), "crush_on");
@@ -37,12 +42,12 @@ EvilFXProcessor::EvilFXProcessor()
     add (std::make_unique<xfx::Jitter>    (apvts), "jit_on");
     add (std::make_unique<xfx::Glitch>    (apvts, transport), "glitch_on");
     add (std::make_unique<BeatGate>       (apvts, transport), "gate_on");
-    add (std::make_unique<xfx::Pump>      (apvts, transport), "pump_on");
+    add (std::make_unique<xfx::Pump>      (apvts, transport, sideChain), "pump_on");
     add (std::make_unique<VolumeSwell>    (apvts), "swell_on");
-    add (std::make_unique<AngelChorus>    (apvts), "chorus_on");
-    add (std::make_unique<xfx::Flanger>   (apvts), "flange_on");
-    add (std::make_unique<BoilingPhaser>  (apvts), "phaser_on");
-    add (std::make_unique<TremPan>        (apvts), "trem_on");
+    add (std::make_unique<AngelChorus>    (apvts, transport), "chorus_on");
+    add (std::make_unique<xfx::Flanger>   (apvts, transport), "flange_on");
+    add (std::make_unique<BoilingPhaser>  (apvts, transport), "phaser_on");
+    add (std::make_unique<TremPan>        (apvts, transport), "trem_on");
     add (std::make_unique<StereoSpread>   (apvts), "spread_on");
     add (std::make_unique<ReverseDelay>   (apvts, transport), "rdelay_on");
     add (std::make_unique<HaloDelay>      (apvts), "delay_on");
@@ -53,6 +58,7 @@ EvilFXProcessor::EvilFXProcessor()
     jassert ((int) slots.size() == NumModules && NumModules == Rack::numModules);
 
     delayModule = static_cast<HaloDelay*> (slots[Delay]->get());
+    for (int i = 0; i < Rack::numModules; ++i) runOrder[(size_t) i] = pendingOrder[(size_t) i] = i;
 
     inGain    = raw (apvts, "in_gain");
     outGain   = raw (apvts, "out_gain");
@@ -61,14 +67,30 @@ EvilFXProcessor::EvilFXProcessor()
     limiterOn = raw (apvts, "limiter");
 
     apvts.addParameterListener ("lobit_on", this);
+    apvts.state.addListener (this);
     apvts.state.setProperty ("preset", 0, nullptr);
     Rack::syncFromParams (apvts);
+    Rack::setOrder (apvts.state, Rack::defaultOrder());
     updateLatency();
 }
 
 EvilFXProcessor::~EvilFXProcessor()
 {
+    apvts.state.removeListener (this);
     apvts.removeParameterListener ("lobit_on", this);
+}
+
+void EvilFXProcessor::valueTreePropertyChanged (juce::ValueTree& tree, const juce::Identifier& prop)
+{
+    if (tree == apvts.state && prop == juce::Identifier ("order")) pushOrderToAudio();
+}
+
+void EvilFXProcessor::pushOrderToAudio()
+{
+    const auto o = Rack::getOrder (apvts.state);
+    const juce::SpinLock::ScopedLockType sl (orderLock);
+    for (int i = 0; i < Rack::numModules; ++i) pendingOrder[(size_t) i] = o[i];
+    orderDirty = true;
 }
 
 bool EvilFXProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -76,7 +98,13 @@ bool EvilFXProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
     const auto out = layouts.getMainOutputChannelSet();
     if (out != juce::AudioChannelSet::mono() && out != juce::AudioChannelSet::stereo()) return false;
     const auto in = layouts.getMainInputChannelSet();
-    return in == juce::AudioChannelSet::mono() || in == juce::AudioChannelSet::stereo();
+    if (in != juce::AudioChannelSet::mono() && in != juce::AudioChannelSet::stereo()) return false;
+    if (layouts.inputBuses.size() > 1)
+    {
+        const auto sc = layouts.getChannelSet (true, 1);
+        if (! sc.isDisabled() && sc != juce::AudioChannelSet::mono() && sc != juce::AudioChannelSet::stereo()) return false;
+    }
+    return true;
 }
 
 void EvilFXProcessor::parameterChanged (const juce::String&, float) { updateLatency(); }
@@ -95,6 +123,7 @@ void EvilFXProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 
     work.setSize (2, maxBlock);
     dry.setSize (2, maxBlock);
+    side.setSize (2, maxBlock);
     dryDelay.setSize (2, LoBitrate::kFFTSize);
     dryDelay.clear();
     dryDelayPos = 0;
@@ -113,8 +142,28 @@ void EvilFXProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 void EvilFXProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
     juce::ScopedNoDenormals noDenormals;
-    const int numIn = getTotalNumInputChannels(), numOut = getTotalNumOutputChannels();
+    auto mainIn  = getBusBuffer (buffer, true, 0);
+    auto mainOut = getBusBuffer (buffer, false, 0);
+    const int numIn = mainIn.getNumChannels(), numOut = mainOut.getNumChannels();
     const int total = buffer.getNumSamples();
+
+    // sidechain (only when the host has it switched on and routed)
+    juce::AudioBuffer<float> scBus;
+    int numSc = 0;
+    if (getBusCount (true) > 1)
+        if (auto* b = getBus (true, 1); b != nullptr && b->isEnabled())
+        {
+            scBus = getBusBuffer (buffer, true, 1);
+            numSc = scBus.getNumChannels();
+        }
+    sidechainConnected = numSc > 0;
+
+    // pick up a new chain order if the UI changed it (never blocks)
+    if (orderDirty.load())
+    {
+        const juce::SpinLock::ScopedTryLockType tl (orderLock);
+        if (tl.isLocked()) { runOrder = pendingOrder; orderDirty = false; }
+    }
 
     double hostPpq = 0.0;
     hostPlaying = false;
@@ -136,26 +185,35 @@ void EvilFXProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
 
         if (numIn > 0)
         {
-            std::copy_n (buffer.getReadPointer (0, start), n, L);
-            std::copy_n (buffer.getReadPointer (numIn > 1 ? 1 : 0, start), n, R);
+            std::copy_n (mainIn.getReadPointer (0, start), n, L);
+            std::copy_n (mainIn.getReadPointer (numIn > 1 ? 1 : 0, start), n, R);
         }
         else { std::fill_n (L, n, 0.0f); std::fill_n (R, n, 0.0f); }
+
+        if (numSc > 0)
+        {
+            std::copy_n (scBus.getReadPointer (0, start), n, side.getWritePointer (0));
+            std::copy_n (scBus.getReadPointer (numSc > 1 ? 1 : 0, start), n, side.getWritePointer (1));
+            sideChain.L = side.getReadPointer (0);
+            sideChain.R = side.getReadPointer (1);
+        }
+        else sideChain.L = sideChain.R = nullptr;
 
         processChunk (L, R, n);
 
         if (numOut == 1)
         {
-            auto* o = buffer.getWritePointer (0, start);
+            auto* o = mainOut.getWritePointer (0, start);
             for (int i = 0; i < n; ++i) o[i] = 0.5f * (L[i] + R[i]);
         }
         else if (numOut >= 2)
         {
-            std::copy_n (L, n, buffer.getWritePointer (0, start));
-            std::copy_n (R, n, buffer.getWritePointer (1, start));
+            std::copy_n (L, n, mainOut.getWritePointer (0, start));
+            std::copy_n (R, n, mainOut.getWritePointer (1, start));
         }
     }
     freePpq = (hostPlaying ? hostPpq : freePpq) + total * beatsPerSample;
-    for (int c = 2; c < numOut; ++c) buffer.clear (c, 0, total);
+    for (int c = 2; c < numOut; ++c) mainOut.clear (c, 0, total);
 }
 
 void EvilFXProcessor::processChunk (float* L, float* R, int n)
@@ -166,8 +224,8 @@ void EvilFXProcessor::processChunk (float* L, float* R, int n)
     auto* dl = dry.getWritePointer (0); auto* dr = dry.getWritePointer (1);
     std::copy_n (L, n, dl); std::copy_n (R, n, dr);
 
-    // --- the chain
-    for (auto& s : slots) s->process (L, R, n);
+    // --- the chain, in the user's order
+    for (int k : runOrder) slots[(size_t) k]->process (L, R, n);
 
     // --- delay the dry signal to line up with the Lo-Bitrate latency
     if (currentLatency.load() > 0)
@@ -269,9 +327,23 @@ const juce::String EvilFXProcessor::getProgramName (int index)
     return juce::isPositiveAndBelow (index, (int) Presets::all().size()) ? Presets::all()[(size_t) index].name : "";
 }
 
+// The A/B slot you're *not* listening to is saved alongside the state,
+// so both sounds come back with the project.
 void EvilFXProcessor::getStateInformation (juce::MemoryBlock& dest)
 {
-    if (auto xml = apvts.copyState().createXml()) copyXmlToBinary (*xml, dest);
+    auto state = apvts.copyState();   // flushes pending parameter values into the tree
+    if (auto xml = state.createXml())
+    {
+        xml->setAttribute ("abActive", abActive);
+        const auto& other = abSlots[1 - abActive];
+        if (other.isValid())
+            if (auto ox = other.createXml())
+            {
+                auto* holder = xml->createNewChildElement ("ABOther");
+                holder->addChildElement (ox.release());
+            }
+        copyXmlToBinary (*xml, dest);
+    }
 }
 
 void EvilFXProcessor::setStateInformation (const void* data, int size)
@@ -279,11 +351,57 @@ void EvilFXProcessor::setStateInformation (const void* data, int size)
     if (auto xml = getXmlFromBinary (data, size))
         if (xml->hasTagName (apvts.state.getType()))
         {
+            abActive = juce::jlimit (0, 1, xml->getIntAttribute ("abActive", 0));
+            abSlots[0] = abSlots[1] = {};
+            if (auto* holder = xml->getChildByName ("ABOther"))
+            {
+                if (auto* ox = holder->getFirstChildElement())
+                    abSlots[1 - abActive] = juce::ValueTree::fromXml (*ox);
+                xml->removeChildElement (holder, true);
+            }
+            xml->removeAttribute ("abActive");
             apvts.replaceState (juce::ValueTree::fromXml (*xml));
             if (! Rack::isValid (apvts.state)) Rack::syncFromParams (apvts);
             else Rack::upgrade (apvts.state);
         }
+    pushOrderToAudio();
+    undoManager.clearUndoHistory();
     updateLatency();
+}
+
+//==============================================================================
+// A/B. The snapshots leave out view settings (theme, visualizer) so switching
+// sounds never changes how the window looks.
+juce::ValueTree EvilFXProcessor::soundSnapshot()
+{
+    auto t = apvts.copyState();
+    for (auto* prop : { "theme", "vizOn", "vizMode" }) t.removeProperty (prop, nullptr);
+    return t;
+}
+
+void EvilFXProcessor::loadSnapshot (const juce::ValueTree& snap)
+{
+    auto t = snap.createCopy();
+    for (auto* prop : { "theme", "vizOn", "vizMode" })
+        if (apvts.state.hasProperty (prop)) t.setProperty (prop, apvts.state.getProperty (prop), nullptr);
+    apvts.replaceState (t);
+    if (! Rack::isValid (apvts.state)) Rack::syncFromParams (apvts);
+    pushOrderToAudio();
+    undoManager.clearUndoHistory();
+    updateLatency();
+}
+
+void EvilFXProcessor::switchAB()
+{
+    abSlots[abActive] = soundSnapshot();
+    abActive = 1 - abActive;
+    if (abSlots[abActive].isValid()) loadSnapshot (abSlots[abActive]);
+    // first time on a slot: it starts as a copy of what you were hearing
+}
+
+void EvilFXProcessor::copyActiveToOther()
+{
+    abSlots[1 - abActive] = soundSnapshot();
 }
 
 juce::AudioProcessorEditor* EvilFXProcessor::createEditor() { return new EvilFXEditor (*this); }

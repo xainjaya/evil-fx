@@ -12,33 +12,43 @@ namespace
     constexpr int headerH = 96, toolbarH = 34, statusH = 26, margin = 14, gap = 10, stripH = 150, cols = 5, footerH = 30;
     const char* kMarquee =
         "  *** Welcome to Evil FX v" EVIL_VERSION " ***  hit + ADD FX to build your chain  ~  "
-        "Beat Repeat, Trance Gate and Sidechain Pump lock to your project tempo  ~  try Blur + Freeze for giant pads  ~  NEW: Talk Box, Freq Shifter, Flanger and Reverse Delay  ~  hit SAVE to keep your own presets  ~  "
+        "drag a card's title bar to change the order  ~  right-click a title bar for more  ~  Ctrl+Z undoes anything  ~  "
+        "A / B lets you compare two sounds  ~  set the LFO SYNC dropdowns to lock wobbles to your tempo  ~  "
+        "try Blur + Freeze for giant pads  ~  NEW: Auto-Tune, Vocoder, Fuzz, Noise Gate  ~  hit BROWSE to search presets and star favourites  ~  "
         "hit RANDOM for happy accidents  ~  pick a THEME you like  ~  double-click any knob to reset it  ~  "
         "the safety limiter keeps your speakers alive  ~  free & open source forever  ~  sign the guestbook @ xainjaya.com  ";
 
     std::vector<CardSpec> moduleSpecs()
     {
         std::vector<CardSpec> s {
+            { 0, "Noise Gate", "clean", false, "ngate_on",
+              { { "ngate_thresh", "Threshold" }, { "ngate_range", "Range" }, { "ngate_release", "Release" } }, { "ngate_key" }, {} },
             { 0, "Transient Shaper", "punch", false, "trans_on",
               { { "trans_attack", "Attack" }, { "trans_sustain", "Sustain" }, { "trans_mix", "Mix" } }, {}, {} },
+            { 0, "Auto-Tune", "2009", false, "tune_on",
+              { { "tune_speed", "Speed" }, { "tune_amount", "Amount" }, { "tune_mix", "Mix" } }, { "tune_key", "tune_scale" }, {} },
             { 0, "Filter", "sweep", false, "filter_on",
               { { "filter_cutoff", "Cutoff" }, { "filter_reso", "Reso" }, { "filter_lforate", "LFO Rate" }, { "filter_lfodepth", "LFO Depth" } },
-              { "filter_mode" }, {} },
+              { "filter_mode", "filter_sync" }, {} },
             { 0, "Auto-Wah", "envelope", false, "wah_on",
               { { "wah_sens", "Sens" }, { "wah_range", "Range" }, { "wah_reso", "Reso" }, { "wah_mix", "Mix" } }, {}, {} },
             { 0, "Talk Box", "vowels", false, "talk_on",
               { { "talk_vowel", "Vowel" }, { "talk_rate", "Rate" }, { "talk_sweep", "Sweep" }, { "talk_mix", "Mix" } },
-              { "talk_voice" }, {} },
+              { "talk_voice", "talk_sync" }, {} },
             { 0, "EQ", "3-band", false, "eq_on",
               { { "eq_low", "Low" }, { "eq_mid", "Mid" }, { "eq_midfreq", "Mid Freq" }, { "eq_high", "High" } }, {}, {} },
             { 0, "Saturation", "drive", false, "gloss_on",
               { { "gloss_drive", "Drive" }, { "gloss_tone", "Tone" }, { "gloss_mix", "Mix" } }, {}, {} },
+            { 0, "Fuzz", "distortion", false, "fuzz_on",
+              { { "fuzz_drive", "Drive" }, { "fuzz_tone", "Tone" }, { "fuzz_gate", "Gate" }, { "fuzz_mix", "Mix" } }, { "fuzz_type" }, {} },
             { 0, "Pitch Shifter", "", true, "pitch_on",
               { { "pitch_semi", "Pitch" }, { "pitch_window", "Grain" }, { "pitch_mix", "Mix" } }, {}, {} },
             { 0, "Ring Modulator", "", true, "ring_on",
               { { "ring_freq", "Freq" }, { "ring_shape", "Shape" }, { "ring_warble", "Arp" }, { "ring_mix", "Mix" } }, {}, {} },
             { 0, "Freq Shifter", "alien", false, "fshift_on",
               { { "fshift_hz", "Shift" }, { "fshift_fb", "Feedback" }, { "fshift_spread", "Spread" }, { "fshift_mix", "Mix" } }, {}, {} },
+            { 0, "Vocoder", "robot", false, "voc_on",
+              { { "voc_note", "Note" }, { "voc_formant", "Formant" }, { "voc_release", "Release" }, { "voc_mix", "Mix" } }, { "voc_carrier" }, {} },
             { 0, "Robot Voice", "", true, "tts_on",
               { { "tts_pitch", "Pitch" }, { "tts_metal", "Metal" }, { "tts_buzz", "Buzz" }, { "tts_mix", "Mix" } }, {}, {} },
             { 0, "Lo-Fi Codec", "", true, "codec_on",
@@ -67,17 +77,17 @@ namespace
             { 0, "Trance Gate", "", true, "gate_on",
               { { "gate_depth", "Depth" }, { "gate_smooth", "Smooth" } }, { "gate_pattern", "gate_div" }, {} },
             { 0, "Sidechain Pump", "", true, "pump_on",
-              { { "pump_depth", "Depth" }, { "pump_shape", "Release" } }, { "pump_div" }, {} },
+              { { "pump_depth", "Depth" }, { "pump_shape", "Release" } }, { "pump_mode", "pump_div" }, {} },
             { 0, "Volume Swell", "fade-in", false, "swell_on",
               { { "swell_attack", "Attack" }, { "swell_sens", "Sens" }, { "swell_mix", "Mix" } }, {}, {} },
             { 0, "Chorus", "thicken", false, "chorus_on",
-              { { "chorus_rate", "Rate" }, { "chorus_depth", "Depth" }, { "chorus_fb", "Feedback" }, { "chorus_mix", "Mix" } }, {}, {} },
+              { { "chorus_rate", "Rate" }, { "chorus_depth", "Depth" }, { "chorus_fb", "Feedback" }, { "chorus_mix", "Mix" } }, { "chorus_sync" }, {} },
             { 0, "Flanger", "jet", false, "flange_on",
-              { { "flange_rate", "Rate" }, { "flange_depth", "Depth" }, { "flange_fb", "Feedback" }, { "flange_mix", "Mix" } }, {}, {} },
+              { { "flange_rate", "Rate" }, { "flange_depth", "Depth" }, { "flange_fb", "Feedback" }, { "flange_mix", "Mix" } }, { "flange_sync" }, {} },
             { 0, "Phaser", "swirl", false, "phaser_on",
-              { { "phaser_rate", "Rate" }, { "phaser_depth", "Depth" }, { "phaser_fb", "Feedback" }, { "phaser_mix", "Mix" } }, {}, {} },
+              { { "phaser_rate", "Rate" }, { "phaser_depth", "Depth" }, { "phaser_fb", "Feedback" }, { "phaser_mix", "Mix" } }, { "phaser_sync" }, {} },
             { 0, "Tremolo / Pan", "motion", false, "trem_on",
-              { { "trem_rate", "Rate" }, { "trem_depth", "Depth" }, { "trem_shape", "Shape" }, { "trem_pan", "Pan" } }, {}, {} },
+              { { "trem_rate", "Rate" }, { "trem_depth", "Depth" }, { "trem_shape", "Shape" }, { "trem_pan", "Pan" } }, { "trem_sync" }, {} },
             { 0, "Stereo Widener", "wide", false, "spread_on",
               { { "spread_width", "Width" }, { "spread_motion", "Motion" }, { "spread_mix", "Mix" } }, {}, {} },
             { 0, "Reverse Delay", "backwards", false, "rdelay_on",
@@ -108,7 +118,8 @@ namespace
     {
         static const std::map<juce::String, juce::String> cat {
             { "trans_on", "Tone & Dynamics" }, { "filter_on", "Tone & Dynamics" }, { "wah_on", "Tone & Dynamics" }, { "eq_on", "Tone & Dynamics" },
-            { "gloss_on", "Tone & Dynamics" }, { "comp_on", "Tone & Dynamics" },
+            { "gloss_on", "Tone & Dynamics" }, { "comp_on", "Tone & Dynamics" }, { "ngate_on", "Tone & Dynamics" },
+            { "fuzz_on", "Tone & Dynamics" }, { "tune_on", "Pitch & Voice" }, { "voc_on", "Pitch & Voice" },
             { "pitch_on", "Pitch & Voice" }, { "ring_on", "Pitch & Voice" }, { "tts_on", "Pitch & Voice" },
             { "talk_on", "Pitch & Voice" }, { "fshift_on", "Pitch & Voice" },
             { "glitch_on", "Rhythm (BPM synced)" }, { "gate_on", "Rhythm (BPM synced)" }, { "pump_on", "Rhythm (BPM synced)" },
@@ -388,6 +399,10 @@ EvilFXEditor::EvilFXEditor (EvilFXProcessor& p) : AudioProcessorEditor (p), proc
     {
         auto* card = cards.add (new ModuleCard (proc.apvts, specs[(size_t) i]));
         card->onRemove = [this, i] { removeModule (i); };
+        card->onDragStart = [this, i] { beginDrag (i); };
+        card->onDragMove = [this, i] (juce::Point<int> p) { dragTo (i, p); };
+        card->onDragEnd = [this, i] { endDrag (i); };
+        card->onContextMenu = [this, i] { showCardMenu (i); };
         rackArea.addChildComponent (card);
     }
     viewport.setViewedComponent (&rackArea, false);
@@ -425,7 +440,23 @@ EvilFXEditor::EvilFXEditor (EvilFXProcessor& p) : AudioProcessorEditor (p), proc
         renderBackground();
         desktop.repaint();
     };
-    for (auto* c : std::initializer_list<juce::Component*> { &addBtn, &clearBtn, &helpBtn, &themeBox }) desktop.addAndMakeVisible (c);
+    undoBtn.setTooltip ("Undo (Ctrl/Cmd+Z)");
+    redoBtn.setTooltip ("Redo (Ctrl/Cmd+Shift+Z or Ctrl+Y)");
+    undoBtn.onClick = [this] { doUndo (false); };
+    redoBtn.onClick = [this] { doUndo (true); };
+    abA.setTooltip ("Sound A - switch between two sounds to compare them");
+    abB.setTooltip ("Sound B - switch between two sounds to compare them");
+    abCopy.setTooltip ("Copy what you're hearing into the other slot");
+    abA.setClickingTogglesState (false); abB.setClickingTogglesState (false);
+    abA.onClick = [this] { if (proc.getActiveAB() != 0) switchAB(); };
+    abB.onClick = [this] { if (proc.getActiveAB() != 1) switchAB(); };
+    abCopy.onClick = [this]
+    {
+        proc.copyActiveToOther();
+        showNote (juce::String ("Copied ") + (proc.getActiveAB() == 0 ? "A to B" : "B to A") + " - tweak away, then compare");
+    };
+    for (auto* c : std::initializer_list<juce::Component*> { &addBtn, &clearBtn, &helpBtn, &themeBox, &undoBtn, &redoBtn, &abA, &abB, &abCopy })
+        desktop.addAndMakeVisible (c);
 
     // ---- master + visualizer
     master = std::make_unique<ModuleCard> (proc.apvts, CardSpec { 0, "Master", "output", false, nullptr,
@@ -452,15 +483,19 @@ EvilFXEditor::EvilFXEditor (EvilFXProcessor& p) : AudioProcessorEditor (p), proc
     {
         const int id = presetBox.getSelectedId();
         if (id <= 0) return;
-        if (id >= 1000) { if (juce::isPositiveAndBelow (id - 1000, userFiles.size())) Presets::loadUser (proc.apvts, userFiles[id - 1000]); }
+        newUndoStep();
+        if (id >= 3000) { if (juce::isPositiveAndBelow (id - 3000, userFiles.size())) Presets::loadUser (proc.apvts, userFiles[id - 3000]); }
+        else if (id >= 2000) Presets::apply (proc.apvts, id - 2000);   // favourites section
+        else if (id >= 1000) { if (juce::isPositiveAndBelow (id - 1000, userFiles.size())) Presets::loadUser (proc.apvts, userFiles[id - 1000]); }
         else Presets::apply (proc.apvts, id - 1);
-        refreshRack();
+        afterSoundChange();
     };
     presetBox.setTooltip ("Factory and user presets");
     auto step = [this] (int d)
     {
         juce::Array<int> ids;
-        for (int i = 0; i < presetBox.getNumItems(); ++i) ids.add (presetBox.getItemId (i));
+        for (int i = 0; i < presetBox.getNumItems(); ++i)
+            if (const int id = presetBox.getItemId (i); id < 2000) ids.add (id);
         if (ids.isEmpty()) return;
         const int cur = juce::jmax (0, ids.indexOf (presetBox.getSelectedId()));
         presetBox.setSelectedId (ids[(cur + d + ids.size()) % ids.size()]);
@@ -470,8 +505,19 @@ EvilFXEditor::EvilFXEditor (EvilFXProcessor& p) : AudioProcessorEditor (p), proc
     saveBtn.setTooltip ("Save the current sound as your own preset");
     saveBtn.onClick = [this] { savePresetDialog(); };
     randomBtn.setTooltip ("Switch on a few random effects with random settings");
-    randomBtn.onClick = [this] { Presets::randomize (proc.apvts); refreshRack(); syncPresetBox(); showNote ("Randomized! Hit SAVE if you like it."); };
-    for (auto* c : std::initializer_list<juce::Component*> { &presetBox, &prevBtn, &nextBtn, &saveBtn, &randomBtn }) desktop.addAndMakeVisible (c);
+    randomBtn.onClick = [this] { newUndoStep(); Presets::randomize (proc.apvts); refreshRack(); syncPresetBox(); showNote ("Randomized! Hit SAVE if you like it.  (Ctrl+Z to go back)"); };
+    browseBtn.setTooltip ("Search presets and star your favourites");
+    browseBtn.onClick = [this] { browser.isVisible() ? closeBrowser() : openBrowser(); };
+    for (auto* c : std::initializer_list<juce::Component*> { &presetBox, &prevBtn, &nextBtn, &saveBtn, &randomBtn, &browseBtn }) desktop.addAndMakeVisible (c);
+
+    browser.currentName = [this] { return proc.apvts.state.getProperty ("presetName").toString(); };
+    browser.onLoadFactory = [this] (int index) { newUndoStep(); Presets::apply (proc.apvts, index); afterSoundChange(); };
+    browser.onLoadUser = [this] (const juce::File& f) { Presets::loadUser (proc.apvts, f); afterSoundChange(); };
+    browser.onClose = [this] { closeBrowser(); };
+    desktop.addChildComponent (browser);
+
+    desktop.addMouseListener (this, true);   // a new undo step on every click
+    setWantsKeyboardFocus (true);
 
     setResizable (true, true);
     getConstrainer()->setFixedAspectRatio ((double) baseW / (double) baseH);
@@ -499,7 +545,12 @@ void EvilFXEditor::resized()
     addBtn.setBounds (tb.removeFromLeft (120)); tb.removeFromLeft (6);
     clearBtn.setBounds (tb.removeFromLeft (76));
     helpBtn.setBounds (tb.removeFromRight (tb.getHeight() + 2)); tb.removeFromRight (8);
-    themeBox.setBounds (tb.removeFromRight (170)); tb.removeFromRight (6);
+    themeBox.setBounds (tb.removeFromRight (150)); tb.removeFromRight (58);   // room for the THEME label
+    abCopy.setBounds (tb.removeFromRight (58)); tb.removeFromRight (4);
+    abB.setBounds (tb.removeFromRight (30)); tb.removeFromRight (2);
+    abA.setBounds (tb.removeFromRight (30)); tb.removeFromRight (14);
+    redoBtn.setBounds (tb.removeFromRight (56)); tb.removeFromRight (4);
+    undoBtn.setBounds (tb.removeFromRight (56));
 
     const int top = toolbarArea.getBottom() + 6, bottom = baseH - statusH - 10;
     viewport.setBounds (margin, top, baseW - 2 * margin, bottom - top - stripH - gap);
@@ -508,11 +559,13 @@ void EvilFXEditor::resized()
     viz.setBounds (master->getRight() + gap, bottom - stripH, baseW - 2 * margin - 470 - gap, stripH);
     moreHint.setBounds (viewport.getX() + (viewport.getWidth() - 14) / 2 - 90, viewport.getBottom() - footerH + 2, 180, footerH - 4);
 
-    presetBox.setBounds (baseW / 2 - 200, 40, 300, 30);
+    presetBox.setBounds (baseW / 2 - 262, 40, 268, 30);
     prevBtn.setBounds (presetBox.getX() - 38, 39, 32, 32);
     nextBtn.setBounds (presetBox.getRight() + 6, 39, 32, 32);
     saveBtn.setBounds (nextBtn.getRight() + 10, 41, 66, 28);
     randomBtn.setBounds (saveBtn.getRight() + 6, 41, 78, 28);
+    browseBtn.setBounds (randomBtn.getRight() + 6, 41, 76, 28);
+    browser.setBounds (0, 0, baseW, baseH);
 
     auto right = juce::Rectangle<int> (margin, 6, baseW - 2 * margin, headerH - 10).removeFromRight (318).reduced (10, 14);
     siteBtn.setBounds (right.withSizeKeepingCentre (right.getWidth(), 50));
@@ -520,7 +573,7 @@ void EvilFXEditor::resized()
     auto inner = statusArea.reduced (3);
     grField  = inner.removeFromRight (120); inner.removeFromRight (3);
     latField = inner.removeFromRight (150); inner.removeFromRight (3);
-    bpmField = inner.removeFromRight (110); inner.removeFromRight (3);
+    bpmField = inner.removeFromRight (140); inner.removeFromRight (3);
     marqueeArea = inner;
 
     renderBackground();
@@ -560,7 +613,8 @@ void EvilFXEditor::focusModule (int module)
 {
     if (! Rack::contains (proc.apvts.state, module))
     {
-        Rack::set (proc.apvts.state, module, true);
+        newUndoStep();
+        Rack::set (proc.apvts.state, module, true, &proc.undoManager);
         if (auto* on = proc.apvts.getParameter (Rack::onId (module))) on->setValueNotifyingHost (1.0f);
         refreshRack();
     }
@@ -574,48 +628,249 @@ void EvilFXEditor::focusModule (int module)
 
 void EvilFXEditor::removeModule (int module)
 {
-    Rack::set (proc.apvts.state, module, false);
+    newUndoStep();
+    Rack::set (proc.apvts.state, module, false, &proc.undoManager);
     if (auto* on = proc.apvts.getParameter (Rack::onId (module))) on->setValueNotifyingHost (0.0f);
     refreshRack();
 }
 
 void EvilFXEditor::clearRack()
 {
+    newUndoStep();
     for (int i = 0; i < Rack::numModules; ++i)
         if (auto* on = proc.apvts.getParameter (Rack::onId (i))) on->setValueNotifyingHost (0.0f);
-    Rack::syncFromParams (proc.apvts);
+    Rack::setFlags (proc.apvts.state, juce::String::repeatedString ("0", Rack::numModules), &proc.undoManager);
     refreshRack();
-    showNote ("Rack cleared. Hit + ADD FX to start again.");
+    showNote ("Rack cleared. Hit + ADD FX to start again (or Ctrl+Z).");
+}
+
+//==============================================================================
+// Rack layout + reordering. The rack shows its modules in chain order; dragging a
+// card's title bar (or the right-click menu) changes that order.
+juce::Array<int> EvilFXEditor::rackSequence() const
+{
+    const auto rack = Rack::get (proc.apvts.state);
+    juce::Array<int> seq;
+    for (int m : Rack::getOrder (proc.apvts.state)) if (rack[m] == '1') seq.add (m);
+    return seq;
+}
+
+juce::Rectangle<int> EvilFXEditor::slotBounds (int slot) const
+{
+    const int areaW = viewport.getWidth() - viewport.getScrollBarThickness() - 4;
+    const int cardW = (areaW - (cols - 1) * gap) / cols;
+    const int cardH = (viewport.getHeight() - gap - footerH) / 2;   // footer leaves room for the "more below" button
+    return { (slot % cols) * (cardW + gap), (slot / cols) * (cardH + gap), cardW, cardH };
+}
+
+void EvilFXEditor::layoutCards (const juce::Array<int>& seq, int skipModule)
+{
+    for (int k = 0; k < seq.size(); ++k)
+    {
+        auto* c = cards[seq[k]];
+        c->setNumber (k + 1);
+        if (seq[k] != skipModule) c->setBounds (slotBounds (k));
+    }
 }
 
 void EvilFXEditor::refreshRack()
 {
+    if (dragModule >= 0) return;   // don't fight an active drag
     const auto rack = Rack::get (proc.apvts.state);
     lastRack = rack;
+    lastOrder = proc.apvts.state.getProperty ("order").toString();
 
+    const auto seq = rackSequence();
+    for (int i = 0; i < cards.size(); ++i) cards[i]->setVisible (rack[i] == '1');
+    layoutCards (seq);
+
+    inRack = seq.size();
     const int areaW = viewport.getWidth() - viewport.getScrollBarThickness() - 4;
     const int viewH = viewport.getHeight();
-    const int cardW = (areaW - (cols - 1) * gap) / cols;
-    const int cardH = (viewH - gap - footerH) / 2;   // footer leaves room for the "more below" button
-
-    int shown = 0;
-    for (int i = 0; i < cards.size(); ++i)
-    {
-        const bool in = rack[i] == '1';
-        cards[i]->setVisible (in);
-        if (in)
-        {
-            cards[i]->setBounds ((shown % cols) * (cardW + gap), (shown / cols) * (cardH + gap), cardW, cardH);
-            ++shown;
-        }
-    }
-    inRack = shown;
-    const int rows = (shown + cols - 1) / cols;
-    rackArea.empty = shown == 0;
+    const int cardH = slotBounds (0).getHeight();
+    const int rows = (inRack + cols - 1) / cols;
+    rackArea.empty = inRack == 0;
     rackArea.setSize (areaW, juce::jmax (viewH, rows * (cardH + gap) - gap + footerH));
     rackArea.repaint();
     desktop.repaint (toolbarArea);
     updateMoreHint();
+}
+
+void EvilFXEditor::commitRackSequence (const juce::Array<int>& seq)
+{
+    // the rack's modules take over the positions the rack's modules already had in
+    // the full chain, in their new sequence; effects not in the rack stay put
+    auto order = Rack::getOrder (proc.apvts.state);
+    const auto rack = Rack::get (proc.apvts.state);
+    int k = 0;
+    for (int pos = 0; pos < order.size() && k < seq.size(); ++pos)
+        if (rack[order[pos]] == '1') order.set (pos, seq[k++]);
+    newUndoStep();
+    Rack::setOrder (proc.apvts.state, order, &proc.undoManager);
+    refreshRack();
+}
+
+void EvilFXEditor::moveModule (int module, int newSlot)
+{
+    auto seq = rackSequence();
+    const int from = seq.indexOf (module);
+    if (from < 0) return;
+    newSlot = juce::jlimit (0, seq.size() - 1, newSlot);
+    if (newSlot == from) return;
+    seq.move (from, newSlot);
+    commitRackSequence (seq);
+    cards[module]->flash();
+}
+
+void EvilFXEditor::showCardMenu (int module)
+{
+    const auto seq = rackSequence();
+    const int pos = seq.indexOf (module);
+    juce::PopupMenu m;
+    m.addSectionHeader (specs[(size_t) module].title + "  (#" + juce::String (pos + 1) + " in the chain)");
+    m.addItem (1, "Move to the start", pos > 0);
+    m.addItem (2, "Move earlier", pos > 0);
+    m.addItem (3, "Move later", pos < seq.size() - 1);
+    m.addItem (4, "Move to the end", pos < seq.size() - 1);
+    m.addSeparator();
+    m.addItem (5, "Remove from rack");
+    m.addItem (6, "Reset the whole chain to the default order", ! Rack::isDefaultOrder (proc.apvts.state));
+    juce::Component::SafePointer<EvilFXEditor> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (cards[module]), [safe, module, pos] (int r)
+    {
+        if (safe == nullptr) return;
+        switch (r)
+        {
+            case 1: safe->moveModule (module, 0); break;
+            case 2: safe->moveModule (module, pos - 1); break;
+            case 3: safe->moveModule (module, pos + 1); break;
+            case 4: safe->moveModule (module, 1 << 20); break;
+            case 5: safe->removeModule (module); break;
+            case 6:
+                safe->newUndoStep();
+                Rack::setOrder (safe->proc.apvts.state, Rack::defaultOrder(), &safe->proc.undoManager);
+                safe->refreshRack();
+                safe->showNote ("Chain back in the default order");
+                break;
+            default: break;
+        }
+    });
+}
+
+void EvilFXEditor::beginDrag (int module)
+{
+    dragModule = module;
+    dragSeq = rackSequence();
+    cards[module]->toFront (false);
+}
+
+void EvilFXEditor::dragTo (int module, juce::Point<int> topLeft)
+{
+    if (dragModule != module) return;
+    auto* c = cards[module];
+    const auto first = slotBounds (0);
+    c->setTopLeftPosition (juce::jlimit (-first.getWidth() / 2, rackArea.getWidth() - first.getWidth() / 2, topLeft.x),
+                           juce::jlimit (-first.getHeight() / 2, rackArea.getHeight() - first.getHeight() / 2, topLeft.y));
+
+    // which slot is the card's centre over?
+    const auto centre = c->getBounds().getCentre();
+    const int col = juce::jlimit (0, cols - 1, centre.x / (first.getWidth() + gap));
+    const int row = juce::jmax (0, centre.y / (first.getHeight() + gap));
+    const int target = juce::jlimit (0, dragSeq.size() - 1, row * cols + col);
+    const int from = dragSeq.indexOf (module);
+    if (from >= 0 && target != from)
+    {
+        dragSeq.move (from, target);
+        layoutCards (dragSeq, module);   // everyone else slides into place live
+    }
+
+    // scroll when dragging near the top/bottom of the rack
+    const auto inView = viewport.getLocalPoint (&rackArea, centre);
+    viewport.autoScroll (inView.x, inView.y, 40, 14);
+}
+
+void EvilFXEditor::endDrag (int module)
+{
+    if (dragModule != module) return;
+    dragModule = -1;
+    const auto seq = dragSeq;
+    if (seq != rackSequence()) commitRackSequence (seq);
+    else refreshRack();
+    cards[module]->flash();
+}
+
+//==============================================================================
+// Undo / redo / A-B
+void EvilFXEditor::newUndoStep() { proc.undoManager.beginNewTransaction(); }
+
+void EvilFXEditor::mouseDown (const juce::MouseEvent&) { newUndoStep(); }
+
+void EvilFXEditor::doUndo (bool redo)
+{
+    proc.apvts.copyState();   // flush pending knob moves into the history first
+    const bool ok = redo ? proc.undoManager.redo() : proc.undoManager.undo();
+    if (! ok) { showNote (redo ? "Nothing to redo" : "Nothing to undo"); return; }
+    Rack::addSwitchedOn (proc.apvts);
+    refreshRack();
+    syncPresetBox();
+    updateUndoButtons();
+}
+
+void EvilFXEditor::updateUndoButtons()
+{
+    undoBtn.setEnabled (proc.undoManager.canUndo());
+    redoBtn.setEnabled (proc.undoManager.canRedo());
+    const int ab = proc.getActiveAB();
+    for (auto [btn, on] : { std::pair<juce::TextButton*, bool> { &abA, ab == 0 }, { &abB, ab == 1 } })
+        if ((bool) btn->getProperties().getWithDefault ("accent", false) != on)
+        {
+            btn->getProperties().set ("accent", on);   // the slot you're hearing glows red
+            btn->repaint();
+        }
+    abCopy.setButtonText (ab == 0 ? "A > B" : "B > A");
+}
+
+void EvilFXEditor::switchAB()
+{
+    proc.switchAB();
+    afterSoundChange();
+    showNote (juce::String ("Listening to ") + (proc.getActiveAB() == 0 ? "A" : "B"));
+}
+
+void EvilFXEditor::afterSoundChange()
+{
+    refreshRack();
+    syncPresetBox();
+    updateUndoButtons();
+    // the theme can't change through A/B, but a loaded user preset might carry one
+    const int theme = juce::jlimit (0, themeNames().size() - 1, (int) proc.apvts.state.getProperty ("theme", 0));
+    if (theme != themeBox.getSelectedItemIndex()) { themeBox.setSelectedItemIndex (theme, juce::dontSendNotification); renderBackground(); desktop.repaint(); }
+}
+
+bool EvilFXEditor::keyPressed (const juce::KeyPress& k)
+{
+    const auto mods = k.getModifiers();
+    const bool cmd = mods.isCommandDown();
+    if (cmd && k.getKeyCode() == 'Z') { doUndo (mods.isShiftDown()); return true; }
+    if (cmd && k.getKeyCode() == 'Y') { doUndo (true); return true; }
+    if (cmd && k.getKeyCode() == 'F') { openBrowser(); return true; }
+    return false;
+}
+
+//==============================================================================
+void EvilFXEditor::openBrowser()
+{
+    browser.refresh();
+    browser.setVisible (true);
+    browser.toFront (true);
+    browser.focusSearch();
+}
+
+void EvilFXEditor::closeBrowser()
+{
+    browser.setVisible (false);
+    rebuildPresetMenu();   // favourites may have changed
+    syncPresetBox();
 }
 
 void EvilFXEditor::updateMoreHint()
@@ -634,12 +889,30 @@ void EvilFXEditor::rebuildPresetMenu()
     presetBox.clear (juce::dontSendNotification);
     juce::String lastCat;
     const auto& list = Presets::all();
+    userFiles = Presets::userPresets();
+
+    const auto favs = Presets::loadFavourites();   // starred presets get their own section on top
+    if (! favs.isEmpty())
+    {
+        bool any = false;
+        for (int i = 0; i < (int) list.size(); ++i)
+            if (favs.contains (Presets::favKeyFactory (list[(size_t) i].name)))
+            {
+                if (! any) { presetBox.addSectionHeading ("Favourites"); any = true; }
+                presetBox.addItem (list[(size_t) i].name, 2000 + i);
+            }
+        for (int i = 0; i < userFiles.size(); ++i)
+            if (favs.contains (Presets::favKeyUser (userFiles[i].getFileNameWithoutExtension())))
+            {
+                if (! any) { presetBox.addSectionHeading ("Favourites"); any = true; }
+                presetBox.addItem (userFiles[i].getFileNameWithoutExtension(), 3000 + i);
+            }
+    }
     for (int i = 0; i < (int) list.size(); ++i)
     {
         if (lastCat != list[(size_t) i].category) { lastCat = list[(size_t) i].category; presetBox.addSectionHeading (lastCat); }
         presetBox.addItem (list[(size_t) i].name, i + 1);
     }
-    userFiles = Presets::userPresets();
     if (! userFiles.isEmpty())
     {
         presetBox.addSectionHeading ("Your Presets");
@@ -653,7 +926,7 @@ void EvilFXEditor::syncPresetBox()
     const auto name = proc.apvts.state.getProperty ("presetName", "Init (Clean)").toString();
     if (presetBox.getText() == name) return;
     for (int i = 0; i < presetBox.getNumItems(); ++i)
-        if (presetBox.getItemText (i) == name) { presetBox.setSelectedId (presetBox.getItemId (i), juce::dontSendNotification); return; }
+        if (presetBox.getItemText (i) == name && presetBox.getItemId (i) < 2000) { presetBox.setSelectedId (presetBox.getItemId (i), juce::dontSendNotification); return; }
     presetBox.setText (name, juce::dontSendNotification);
 }
 
@@ -685,8 +958,13 @@ void EvilFXEditor::showHelp()
         "Free & open-source multi-FX by Xain Jaya.\n\n"
         "+ ADD FX: pick effects for your rack. Ticked ones are already in it; picking one jumps to its card.\n"
         "X on a card removes it, the power button bypasses it without removing it.\n"
-        "Signal flows left to right, top to bottom, in the numbered order.\n\n"
-        "Beat Repeat, Trance Gate, Sidechain Pump, Delay and Reverse Delay sync to your project tempo.\nFor huge ambient pads try Blur (Freeze holds the sound forever) with Volume Swell.\n\n"
+        "Signal flows left to right, top to bottom, in the numbered order.\n"
+        "Drag a card's title bar to move it in the chain; right-click a title bar for more.\n\n"
+        "UNDO / REDO (Ctrl/Cmd+Z) step back through any change. A / B holds two sounds to compare; A > B copies.\n"
+        "BROWSE (Ctrl/Cmd+F) searches every preset; click a star to favourite it.\n\n"
+        "Beat Repeat, Trance Gate, Sidechain Pump, Delay and Reverse Delay sync to your project tempo,\n"
+        "and the SYNC dropdowns lock Filter, Talk Box, Chorus, Flanger, Phaser and Tremolo to it too.\n"
+        "Sidechain Pump, Noise Gate and Vocoder can use your DAW's sidechain input (SC shows in the status bar).\nFor huge ambient pads try Blur (Freeze holds the sound forever) with Volume Swell.\n\n"
         "Presets: pick one up top, SAVE your own (Documents/Evil FX/Presets), or hit RANDOM.\n"
         "Knobs: drag up/down, double-click to reset, click the value to type one in.\n"
         "The Limiter on Master keeps the output safe; leave it on unless you know why.\n\n"
@@ -704,10 +982,39 @@ void EvilFXEditor::showNote (const juce::String& text)
 void EvilFXEditor::timerCallback()
 {
     // rack: pick up anything switched on by automation or a preset change from the host
-    Rack::addSwitchedOn (proc.apvts);
-    if (Rack::get (proc.apvts.state) != lastRack) refreshRack();
+    if (dragModule < 0)
+    {
+        Rack::addSwitchedOn (proc.apvts);
+        if (Rack::get (proc.apvts.state) != lastRack || proc.apvts.state.getProperty ("order").toString() != lastOrder) refreshRack();
+    }
     updateMoreHint();
     syncPresetBox();
+    updateUndoButtons();
+
+    // mascot: blinks every few seconds, grins wider the louder it gets
+    {
+        const float hz = viz.isOn() ? 30.0f : 15.0f;
+        float newBlink = 0.0f;
+        if (blinkPhase > 0)
+        {
+            blinkPhase = juce::jmax (0, blinkPhase - (int) (30.0f / hz));
+            const float t = (float) blinkPhase / 6.0f;          // 6 ticks @30 Hz = 200 ms
+            newBlink = 1.0f - std::abs (2.0f * t - 1.0f);
+        }
+        else if (--blinkCountdown <= 0)
+        {
+            blinkPhase = 6;
+            blinkCountdown = (int) (hz * (2.5f + juce::Random::getSystemRandom().nextFloat() * 4.0f));
+        }
+        const float level = juce::jmax (proc.meterL.load(), proc.meterR.load());
+        const float targetGrin = juce::jlimit (0.0f, 1.0f, (juce::Decibels::gainToDecibels (level, -60.0f) + 30.0f) / 24.0f);
+        const float newGrin = grin + (targetGrin - grin) * (targetGrin > grin ? 0.5f : 0.12f);
+        if (std::abs (newBlink - blink) > 0.01f || std::abs (newGrin - grin) > 0.01f)
+        {
+            blink = newBlink; grin = newGrin;
+            desktop.repaint (logoArea);
+        }
+    }
 
     for (auto* c : cards) c->tickFlash();
 
@@ -718,7 +1025,8 @@ void EvilFXEditor::timerCallback()
     const float gr = std::round (proc.gainReductionDb.load() * 10.0f) / 10.0f;
     const float bpm = std::round (proc.currentBpm.load() * 10.0f) / 10.0f;
     activeModules = active;
-    if (lat != latency || gr != shownGr || bpm != shownBpm) { latency = lat; shownGr = gr; shownBpm = bpm; desktop.repaint (statusArea); }
+    const bool sc = proc.sidechainConnected.load();
+    if (lat != latency || gr != shownGr || bpm != shownBpm || sc != shownSc) { latency = lat; shownGr = gr; shownBpm = bpm; shownSc = sc; desktop.repaint (statusArea); }
 
     if (viz.isOn())
         viz.tick ([this] (float* d, int n) { return proc.pullVisualizerSamples (d, n); }, proc.getSampleRate() > 0 ? proc.getSampleRate() : 48000.0);
@@ -727,10 +1035,10 @@ void EvilFXEditor::timerCallback()
     marqueeX -= viz.isOn() ? 1.3f : 2.6f;
     desktop.repaint (marqueeArea);
 
-    // the delay Time knobs do nothing while tempo-synced, so fade them
-    auto fadeSynced = [this] (int module, const char* timeId, const char* syncId, const char* onId)
+    // Time / Rate knobs do nothing while tempo-synced, so fade them
+    auto fadeSynced = [this] (int module, const char* knobId, const char* syncId, const char* onId)
     {
-        if (auto* t = cards[module]->getSlider (timeId))
+        if (auto* t = cards[module]->getSlider (knobId))
         {
             const bool synced = proc.apvts.getRawParameterValue (syncId)->load() > 0.5f;
             const bool on = proc.apvts.getRawParameterValue (onId)->load() > 0.5f;
@@ -738,8 +1046,14 @@ void EvilFXEditor::timerCallback()
             if (std::abs (t->getAlpha() - a) > 0.01f) { t->setAlpha (a); cards[module]->repaint(); }
         }
     };
-    fadeSynced (EvilFXProcessor::Delay, "delay_time", "delay_sync", "delay_on");
-    fadeSynced (EvilFXProcessor::RevDelay, "rdelay_time", "rdelay_sync", "rdelay_on");
+    fadeSynced (EvilFXProcessor::Delay,     "delay_time",     "delay_sync",  "delay_on");
+    fadeSynced (EvilFXProcessor::RevDelay,  "rdelay_time",    "rdelay_sync", "rdelay_on");
+    fadeSynced (EvilFXProcessor::Filter,    "filter_lforate", "filter_sync", "filter_on");
+    fadeSynced (EvilFXProcessor::Talk,      "talk_rate",      "talk_sync",   "talk_on");
+    fadeSynced (EvilFXProcessor::Chorus,    "chorus_rate",    "chorus_sync", "chorus_on");
+    fadeSynced (EvilFXProcessor::FlangerFx, "flange_rate",    "flange_sync", "flange_on");
+    fadeSynced (EvilFXProcessor::Phaser,    "phaser_rate",    "phaser_sync", "phaser_on");
+    fadeSynced (EvilFXProcessor::Trem,      "trem_rate",      "trem_sync",   "trem_on");
 }
 
 //==============================================================================
@@ -790,8 +1104,9 @@ void EvilFXEditor::Desktop::paint (juce::Graphics& g)
                 juce::Rectangle<int> (textX, owner.toolbarArea.getY(), 200, owner.toolbarArea.getHeight()), juce::Justification::centredLeft);
     g.setColour (col::ink.withAlpha (0.55f));
     g.setFont (sans (11.5f));
-    g.drawText ("signal flows left to right, top to bottom",
-                juce::Rectangle<int> (textX + 175, owner.toolbarArea.getY(), 300, owner.toolbarArea.getHeight()), juce::Justification::centredLeft);
+    g.drawText ("drag title bars to reorder",
+                juce::Rectangle<int> (textX + 165, owner.toolbarArea.getY(), owner.undoBtn.getX() - textX - 170, owner.toolbarArea.getHeight()),
+                juce::Justification::centredLeft);
     g.setColour (col::ink.withAlpha (0.7f));
     g.setFont (sans (10.5f, true));
     g.drawText ("THEME", owner.themeBox.getBounds().translated (-52, 0).withWidth (48), juce::Justification::centredRight);
@@ -804,7 +1119,8 @@ void EvilFXEditor::Desktop::paint (juce::Graphics& g)
 
     g.setFont (mono (11.5f));
     g.setColour (juce::Colours::black);
-    g.drawText ("BPM: " + juce::String (owner.shownBpm, 1), owner.bpmField.reduced (6, 0), juce::Justification::centredLeft);
+    g.drawText ("BPM: " + juce::String (owner.shownBpm, 1) + (owner.proc.sidechainConnected.load() ? "  SC" : ""),
+                owner.bpmField.reduced (6, 0), juce::Justification::centredLeft);
     g.drawText ("LATENCY: " + juce::String (juce::jmax (0, owner.latency)) + " smp", owner.latField.reduced (6, 0), juce::Justification::centredLeft);
     g.drawText ("LIMIT: " + juce::String (juce::jmin (0.0f, owner.shownGr), 1) + " dB", owner.grField.reduced (6, 0), juce::Justification::centredLeft);
 
@@ -828,7 +1144,7 @@ void EvilFXEditor::Desktop::paint (juce::Graphics& g)
 void EvilFXEditor::drawLogo (juce::Graphics& g, juce::Rectangle<float> area)
 {
     const float r = 27.0f;
-    drawSmiley (g, { area.getX() + 40.0f, area.getCentreY() + 9.0f }, r);
+    drawSmiley (g, { area.getX() + 40.0f, area.getCentreY() + 9.0f }, r, blink, grin);
 
     const float tx = area.getX() + 40.0f + r * 1.62f + 10.0f;   // clear of the cap brim
     juce::GlyphArrangement ga;

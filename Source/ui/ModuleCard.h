@@ -58,6 +58,11 @@ public:
 
     std::function<void()> onRemove;   // called when the X is clicked
 
+    // dragging the title bar reorders the chain; positions are in the card's parent
+    std::function<void (juce::Point<int>)> onDragMove;
+    std::function<void()> onDragStart, onDragEnd;
+    std::function<void()> onContextMenu;   // right-click on the title bar
+
     ModuleCard (juce::AudioProcessorValueTreeState& state, CardSpec s) : spec (std::move (s)), removeBtn (spec.retro)
     {
         using APVTS = juce::AudioProcessorValueTreeState;
@@ -117,6 +122,41 @@ public:
         setBufferedToImage (true);
         refreshEnabledLook();
     }
+
+    // position badge (1 = first in the chain). Master stays 0 = no badge.
+    void setNumber (int n) { if (spec.number != n && spec.number != 0) { spec.number = n; repaint(); } }
+    const CardSpec& getSpec() const { return spec; }
+
+    void mouseDown (const juce::MouseEvent& e) override
+    {
+        dragging = false;
+        if (spec.powerId == nullptr || e.y > titleH + 2) return;
+        if (e.mods.isPopupMenu()) { if (onContextMenu) onContextMenu(); return; }
+        grabOffset = e.getPosition();
+    }
+    void mouseDrag (const juce::MouseEvent& e) override
+    {
+        if (spec.powerId == nullptr || grabOffset.y < 0 || grabOffset.y > titleH + 2 || e.mods.isPopupMenu()) return;
+        if (! dragging)
+        {
+            if (e.getDistanceFromDragStart() < 5) return;
+            dragging = true;
+            setMouseCursor (juce::MouseCursor::DraggingHandCursor);
+            if (onDragStart) onDragStart();
+        }
+        if (onDragMove) onDragMove (e.getEventRelativeTo (getParentComponent()).getPosition() - grabOffset);
+    }
+    void mouseUp (const juce::MouseEvent&) override
+    {
+        if (dragging) { dragging = false; setMouseCursor (juce::MouseCursor::NormalCursor); if (onDragEnd) onDragEnd(); }
+        grabOffset = { -1, -1 };
+    }
+    void mouseMove (const juce::MouseEvent& e) override
+    {
+        setMouseCursor (spec.powerId != nullptr && e.y <= titleH + 2 ? juce::MouseCursor::DraggingHandCursor
+                                                                    : juce::MouseCursor::NormalCursor);
+    }
+    bool isBeingDragged() const { return dragging; }
 
     // brief glow so you can spot the card you just jumped to
     void flash() { flashAmt = 1.0f; repaint(); }
@@ -259,6 +299,11 @@ private:
             g.drawText (spec.tagline, titleArea, juce::Justification::centredRight);
         }
 
+        if (dragging)   // lifted look while it's being moved
+        {
+            g.setColour (juce::Colour (0xffffe08a).withAlpha (0.8f));
+            g.drawRoundedRectangle (r.reduced (1.0f), corner, 2.5f);
+        }
         g.setColour (juce::Colours::white.withAlpha (0.9f));
         g.strokePath (shape, juce::PathStrokeType (1.3f));
         g.setColour (col::redDeep.withAlpha (0.25f));
@@ -309,8 +354,9 @@ private:
     juce::StringArray labels;
     std::vector<juce::Rectangle<int>> captionBounds;
     juce::Rectangle<int> optionSpare;
-    bool lastOn = true;
+    bool lastOn = true, dragging = false;
     float flashAmt = 0.0f;
+    juce::Point<int> grabOffset { -1, -1 };
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> powerAtt;
     juce::OwnedArray<juce::AudioProcessorValueTreeState::ComboBoxAttachment> comboAtts;

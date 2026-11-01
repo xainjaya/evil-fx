@@ -10,14 +10,6 @@
 
 namespace xfx
 {
-// Host transport, filled in by the processor once per chunk. When the host isn't
-// playing, the processor keeps its own free-running beat clock so the BPM effects
-// still work (e.g. in the standalone app or with the transport stopped).
-struct Transport
-{
-    double ppq = 0.0;     // position in quarter notes at the start of the chunk
-    double bpm = 120.0;
-};
 
 //==============================================================================
 class Glitch : public Module
@@ -79,8 +71,8 @@ public:
                     const float t = juce::jlimit (0.0f, 1.0f, (float) k / (float) sliceLen);
                     readPos += std::pow (1.0f - t, 1.5f);
                     double rp = std::fmod (readPos, (double) len);
-                    const int i0 = (int) rp, i1 = (i0 + 1) % len;
-                    const float fr = (float) (rp - i0);
+                    const int iR = (int) rp, i0 = iR % len, i1 = (i0 + 1) % len;   // rp can round up to exactly len
+                    const float fr = (float) (rp - iR);
                     wl = b[0][i0] + (b[0][i1] - b[0][i0]) * fr;
                     wr = b[1][i0] + (b[1][i1] - b[1][i0]) * fr;
                 }
@@ -209,8 +201,8 @@ private:
     {
         float rp = (float) w - delay;
         if (rp < 0.0f) rp += (float) len;
-        const int i0 = (int) rp, i1 = (i0 + 1) % len;
-        const float fr = rp - (float) i0;
+        const int iR = (int) rp, i0 = iR % len, i1 = (i0 + 1) % len;   // rp can round up to exactly len
+        const float fr = (float) (rp - iR);
         return b[i0] + (b[i1] - b[i0]) * fr;
     }
 

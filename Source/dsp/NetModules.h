@@ -320,8 +320,8 @@ public:
 
             double rp = (double) w - delay;
             if (rp < 0.0) rp += len;
-            const int i0 = (int) rp, i1 = (i0 + 1) % len;
-            const float fr = (float) (rp - i0);
+            const int iR = (int) rp, i0 = iR % len, i1 = (i0 + 1) % len;   // rp can round up to exactly len
+            const float fr = (float) (rp - iR);
             for (int ch = 0; ch < 2; ++ch)
             {
                 const float y = b[ch][i0] + (b[ch][i1] - b[ch][i0]) * fr;
@@ -381,8 +381,8 @@ public:
 
             const float d = base + wowD * std::sin (twoPi * ph1) + flutD * std::sin (twoPi * ph2) + driftD * driftVal;
             float rp = (float) w - d; if (rp < 0.0f) rp += (float) len;
-            const int i0 = (int) rp, i1 = (i0 + 1) % len;
-            const float fr = rp - (float) i0;
+            const int iR = (int) rp, i0 = iR % len, i1 = (i0 + 1) % len;   // rp can round up to exactly len
+            const float fr = (float) (rp - iR);
             const float m = mixS.getNextValue();
             for (int c = 0; c < 2; ++c)
                 io[c][i] = blend (io[c][i], b[c][i0] + (b[c][i1] - b[c][i0]) * fr, m);
