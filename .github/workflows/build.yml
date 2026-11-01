@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Windows, os: windows-latest, extra: "" }
+          - { name: macOS,   os: macos-latest,   extra: "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" }
+          - { name: Linux,   os: ubuntu-22.04,   extra: "" }
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libasound2-dev libjack-jackd2-dev libfreetype6-dev \
+            libfontconfig1-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev \
+            libxinerama-dev libxrandr-dev libxrender-dev libglu1-mesa-dev mesa-common-dev
+
+      - name: Configure
+        shell: bash
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release "${{ matrix.extra }}"
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Test (DSP stress test)
+        shell: bash
+        run: |
+          exe=$(find build -type f \( -name EvilFXTests -o -name EvilFXTests.exe \) -perm -u+x | head -n 1)
+          [ -z "$exe" ] && exe=$(find build -name "EvilFXTests*" -type f | grep -v "\.d$" | head -n 1)
+          "$exe"
+
+      - name: Collect
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp -R build/EvilFX_artefacts/Release/* dist/ || true
+          cp README.md LICENSE dist/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EvilFX-${{ matrix.name }}
+          path: dist
