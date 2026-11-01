@@ -90,7 +90,7 @@ namespace Params
         { p.push_back (std::make_unique<APF> (pid (id), name, r, def, a)); };
         auto lin = [] (float lo, float hi) { return juce::NormalisableRange<float> (lo, hi); };
 
-        // Crimson Filter
+        // Filter
         onOff ("filter_on", "Filter On");
         p.push_back (std::make_unique<APC> (pid ("filter_mode"), "Filter Mode", juce::StringArray { "Low Pass", "Band Pass", "High Pass" }, 0));
         flt ("filter_cutoff",   "Filter Cutoff",    skewed (20.0f, 20000.0f, 1000.0f), 6000.0f, hz());
@@ -98,45 +98,45 @@ namespace Params
         flt ("filter_lforate",  "Filter LFO Rate",  skewed (0.01f, 10.0f, 1.0f), 0.3f, hz());
         flt ("filter_lfodepth", "Filter LFO Depth", lin (0.0f, 4.0f), 0.0f, oct());
 
-        // Scorch Drive (saturation)
-        onOff ("gloss_on", "Scorch On");
-        flt ("gloss_drive", "Scorch Drive", lin (0.0f, 24.0f), 6.0f, db());
-        flt ("gloss_tone",  "Scorch Tone",  lin (-1.0f, 1.0f), 0.0f, bip());
-        flt ("gloss_mix",   "Scorch Mix",   lin (0.0f, 1.0f), 1.0f, pct());
+        // Saturation (saturation)
+        onOff ("gloss_on", "Saturation On");
+        flt ("gloss_drive", "Saturation Drive", lin (0.0f, 24.0f), 6.0f, db());
+        flt ("gloss_tone",  "Saturation Tone",  lin (-1.0f, 1.0f), 0.0f, bip());
+        flt ("gloss_mix",   "Saturation Mix",   lin (0.0f, 1.0f), 1.0f, pct());
 
         // 3 Dial-Up (phone line / modem)
-        onOff ("dial_on", "Dial-Up On");
-        flt ("dial_band",    "Dial-Up Bandwidth", lin (0.0f, 1.0f), 0.3f, pct());
-        flt ("dial_noise",   "Dial-Up Line Noise", lin (0.0f, 1.0f), 0.2f, pct());
-        flt ("dial_crackle", "Dial-Up Crackle",   lin (0.0f, 1.0f), 0.2f, pct());
-        flt ("dial_mix",     "Dial-Up Mix",       lin (0.0f, 1.0f), 1.0f, pct());
-        onOff ("dial_modem", "Dial-Up Modem Squeal");
+        onOff ("dial_on", "Telephone On");
+        flt ("dial_band",    "Telephone Bandwidth", lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("dial_noise",   "Telephone Line Noise", lin (0.0f, 1.0f), 0.2f, pct());
+        flt ("dial_crackle", "Telephone Crackle",   lin (0.0f, 1.0f), 0.2f, pct());
+        flt ("dial_mix",     "Telephone Mix",       lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("dial_modem", "Telephone Modem Squeal");
 
         // 4 8-Bit Crush
-        onOff ("crush_on", "Crush On");
-        flt ("crush_bits", "Crush Bits",       lin (1.0f, 16.0f), 8.0f, bits());
-        flt ("crush_rate", "Crush Downsample", skewed (1.0f, 40.0f, 6.0f), 4.0f, times());
-        flt ("crush_mix",  "Crush Mix",        lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("crush_on", "Bitcrusher On");
+        flt ("crush_bits", "Bitcrusher Bits",       lin (1.0f, 16.0f), 8.0f, bits());
+        flt ("crush_rate", "Bitcrusher Downsample", skewed (1.0f, 40.0f, 6.0f), 4.0f, times());
+        flt ("crush_mix",  "Bitcrusher Mix",        lin (0.0f, 1.0f), 1.0f, pct());
 
         // 5 Buffering (stream stutter / dropout)
-        onOff ("buf_on", "Buffering On");
-        flt ("buf_chance",  "Buffering Chance",  lin (0.0f, 1.0f), 0.25f, pct());
-        flt ("buf_slice",   "Buffering Slice",   skewed (20.0f, 500.0f, 120.0f), 120.0f, ms());
-        flt ("buf_dropout", "Buffering Dropout", lin (0.0f, 1.0f), 0.3f, pct());
-        flt ("buf_mix",     "Buffering Mix",     lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("buf_on", "Stutter On");
+        flt ("buf_chance",  "Stutter Chance",  lin (0.0f, 1.0f), 0.25f, pct());
+        flt ("buf_slice",   "Stutter Slice",   skewed (20.0f, 500.0f, 120.0f), 120.0f, ms());
+        flt ("buf_dropout", "Stutter Dropout", lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("buf_mix",     "Stutter Mix",     lin (0.0f, 1.0f), 1.0f, pct());
 
         // 6 Lo-Bitrate (spectral codec artifacts)
-        onOff ("lobit_on", "Lo-Bitrate On");
-        flt ("lobit_kbps",  "Lo-Bitrate Kbps",  skewed (8.0f, 192.0f, 48.0f), 32.0f, kbps());
-        flt ("lobit_swirl", "Lo-Bitrate Swirl", lin (0.0f, 1.0f), 0.5f, pct());
-        flt ("lobit_mix",   "Lo-Bitrate Mix",   lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("lobit_on", "MP3 Compression On");
+        flt ("lobit_kbps",  "MP3 Bitrate",  skewed (8.0f, 192.0f, 48.0f), 32.0f, kbps());
+        flt ("lobit_swirl", "MP3 Artifacts", lin (0.0f, 1.0f), 0.5f, pct());
+        flt ("lobit_mix",   "MP3 Mix",   lin (0.0f, 1.0f), 1.0f, pct());
 
         // CODEC.EXE — old-school sample rates + telephony / ADPCM codecs
-        onOff ("codec_on", "Codec On");
-        p.push_back (std::make_unique<APC> (pid ("codec_rate"), "Codec Sample Rate", codecRateNames(), 2));
-        p.push_back (std::make_unique<APC> (pid ("codec_type"), "Codec Type", juce::StringArray { "8-bit PCM", "u-Law", "A-Law", "IMA ADPCM" }, 3));
-        flt ("codec_alias", "Codec Aliasing", lin (0.0f, 1.0f), 0.5f, pct());
-        flt ("codec_mix",   "Codec Mix",      lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("codec_on", "Lo-Fi Codec On");
+        p.push_back (std::make_unique<APC> (pid ("codec_rate"), "Lo-Fi Codec Sample Rate", codecRateNames(), 2));
+        p.push_back (std::make_unique<APC> (pid ("codec_type"), "Lo-Fi Codec Type", juce::StringArray { "8-bit PCM", "u-Law", "A-Law", "IMA ADPCM" }, 3));
+        flt ("codec_alias", "Lo-Fi Codec Aliasing", lin (0.0f, 1.0f), 0.5f, pct());
+        flt ("codec_mix",   "Lo-Fi Codec Mix",      lin (0.0f, 1.0f), 1.0f, pct());
 
         // PACKETLOSS.EXE — VoIP packet loss + concealment
         onOff ("pkt_on", "Packet Loss On");
@@ -146,61 +146,61 @@ namespace Params
         flt ("pkt_mix",  "Packet Loss Mix",    lin (0.0f, 1.0f), 1.0f, pct());
 
         // CORRUPT.EXE — bit flips + reversed fragments, like a damaged download
-        onOff ("corrupt_on", "Corrupt On");
-        flt ("corrupt_amount",  "Corrupt Amount",  lin (0.0f, 1.0f), 0.3f, pct());
-        flt ("corrupt_bits",    "Corrupt Bit Depth", lin (0.0f, 1.0f), 0.4f, pct());
-        flt ("corrupt_reverse", "Corrupt Reverse", lin (0.0f, 1.0f), 0.2f, pct());
-        flt ("corrupt_mix",     "Corrupt Mix",     lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("corrupt_on", "Data Corruption On");
+        flt ("corrupt_amount",  "Corruption Amount",  lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("corrupt_bits",    "Corruption Bits", lin (0.0f, 1.0f), 0.4f, pct());
+        flt ("corrupt_reverse", "Corruption Reverse", lin (0.0f, 1.0f), 0.2f, pct());
+        flt ("corrupt_mix",     "Corruption Mix",     lin (0.0f, 1.0f), 1.0f, pct());
 
         // LAG.EXE — lag spikes: audio slows to a crawl then fast-forwards to catch up
-        onOff ("lag_on", "Lag On");
-        flt ("lag_chance", "Lag Chance", lin (0.0f, 1.0f), 0.3f, pct());
-        flt ("lag_length", "Lag Length", skewed (80.0f, 1500.0f, 400.0f), 350.0f, ms());
-        flt ("lag_depth",  "Lag Depth",  lin (0.0f, 1.0f), 0.7f, pct());
-        flt ("lag_mix",    "Lag Mix",    lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("lag_on", "Varispeed On");
+        flt ("lag_chance", "Varispeed Chance", lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("lag_length", "Varispeed Length", skewed (80.0f, 1500.0f, 400.0f), 350.0f, ms());
+        flt ("lag_depth",  "Varispeed Depth",  lin (0.0f, 1.0f), 0.7f, pct());
+        flt ("lag_mix",    "Varispeed Mix",    lin (0.0f, 1.0f), 1.0f, pct());
 
         // JITTER.EXE — wow, flutter and clock drift
-        onOff ("jit_on", "Jitter On");
-        flt ("jit_wow",     "Jitter Wow",     lin (0.0f, 1.0f), 0.3f, pct());
-        flt ("jit_flutter", "Jitter Flutter", lin (0.0f, 1.0f), 0.2f, pct());
-        flt ("jit_drift",   "Jitter Drift",   lin (0.0f, 1.0f), 0.2f, pct());
-        flt ("jit_mix",     "Jitter Mix",     lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("jit_on", "Wow & Flutter On");
+        flt ("jit_wow",     "Wow",     lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("jit_flutter", "Flutter", lin (0.0f, 1.0f), 0.2f, pct());
+        flt ("jit_drift",   "Drift",   lin (0.0f, 1.0f), 0.2f, pct());
+        flt ("jit_mix",     "Wow & Flutter Mix",     lin (0.0f, 1.0f), 1.0f, pct());
 
         // NIGHTCORE.EXE — pitch shifter
-        onOff ("pitch_on", "Nightcore On");
-        flt ("pitch_semi", "Nightcore Pitch", lin (-12.0f, 12.0f), 4.0f,
+        onOff ("pitch_on", "Pitch Shifter On");
+        flt ("pitch_semi", "Pitch Shift", lin (-12.0f, 12.0f), 4.0f,
              Attr().withStringFromValueFunction ([] (float v, int) { return (v > 0 ? "+" : "") + juce::String (v, 1) + " st"; }));
-        flt ("pitch_window", "Nightcore Grain", lin (0.0f, 1.0f), 0.5f, pct());
-        flt ("pitch_mix",  "Nightcore Mix",   lin (0.0f, 1.0f), 1.0f, pct());
+        flt ("pitch_window", "Pitch Shifter Grain", lin (0.0f, 1.0f), 0.5f, pct());
+        flt ("pitch_mix",  "Pitch Shifter Mix",   lin (0.0f, 1.0f), 1.0f, pct());
 
         // RINGTONE.EXE — ring modulator with ringtone warble
-        onOff ("ring_on", "Ringtone On");
-        flt ("ring_freq",   "Ringtone Freq",   skewed (20.0f, 4000.0f, 400.0f), 440.0f, hz());
-        flt ("ring_shape",  "Ringtone Shape",  lin (0.0f, 1.0f), 0.0f, pct());
-        flt ("ring_warble", "Ringtone Warble", lin (0.0f, 1.0f), 0.0f, pct());
-        flt ("ring_mix",    "Ringtone Mix",    lin (0.0f, 1.0f), 0.5f, pct());
+        onOff ("ring_on", "Ring Mod On");
+        flt ("ring_freq",   "Ring Mod Frequency",   skewed (20.0f, 4000.0f, 400.0f), 440.0f, hz());
+        flt ("ring_shape",  "Ring Mod Shape",  lin (0.0f, 1.0f), 0.0f, pct());
+        flt ("ring_warble", "Ring Mod Arpeggio", lin (0.0f, 1.0f), 0.0f, pct());
+        flt ("ring_mix",    "Ring Mod Mix",    lin (0.0f, 1.0f), 0.5f, pct());
 
         // GLITCH.EXE — beat-synced repeat / stutter / reverse / tape stop
-        onOff ("glitch_on", "Glitch On");
-        p.push_back (std::make_unique<APC> (pid ("glitch_div"), "Glitch Division", beatDivNames(), 3));
-        p.push_back (std::make_unique<APC> (pid ("glitch_style"), "Glitch Style", juce::StringArray { "Random", "Repeat", "Stutter", "Reverse", "Tape Stop" }, 0));
-        flt ("glitch_chance", "Glitch Chance", lin (0.0f, 1.0f), 0.35f, pct());
-        flt ("glitch_mix",    "Glitch Mix",    lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("glitch_on", "Beat Repeat On");
+        p.push_back (std::make_unique<APC> (pid ("glitch_div"), "Beat Repeat Division", beatDivNames(), 3));
+        p.push_back (std::make_unique<APC> (pid ("glitch_style"), "Beat Repeat Style", juce::StringArray { "Random", "Repeat", "Stutter", "Reverse", "Tape Stop" }, 0));
+        flt ("glitch_chance", "Beat Repeat Chance", lin (0.0f, 1.0f), 0.35f, pct());
+        flt ("glitch_mix",    "Beat Repeat Mix",    lin (0.0f, 1.0f), 1.0f, pct());
 
         // GATE.EXE — beat-synced rhythmic gate
-        onOff ("gate_on", "Gate On");
-        p.push_back (std::make_unique<APC> (pid ("gate_pattern"), "Gate Pattern", gatePatternNames(), 3));
-        p.push_back (std::make_unique<APC> (pid ("gate_div"), "Gate Division", beatDivNames(), 3));
-        flt ("gate_depth",  "Gate Depth",  lin (0.0f, 1.0f), 0.9f, pct());
-        flt ("gate_smooth", "Gate Smooth", lin (0.0f, 1.0f), 0.3f, pct());
+        onOff ("gate_on", "Trance Gate On");
+        p.push_back (std::make_unique<APC> (pid ("gate_pattern"), "Trance Gate Pattern", gatePatternNames(), 3));
+        p.push_back (std::make_unique<APC> (pid ("gate_div"), "Trance Gate Division", beatDivNames(), 3));
+        flt ("gate_depth",  "Trance Gate Depth",  lin (0.0f, 1.0f), 0.9f, pct());
+        flt ("gate_smooth", "Trance Gate Smooth", lin (0.0f, 1.0f), 0.3f, pct());
 
         // Glory Comp — easy compressor with auto makeup
-        onOff ("comp_on", "Comp On");
-        flt ("comp_squash", "Comp Squash", lin (0.0f, 1.0f), 0.4f, pct());
-        flt ("comp_ratio",  "Comp Ratio",  skewed (1.0f, 20.0f, 4.0f), 4.0f,
+        onOff ("comp_on", "Compressor On");
+        flt ("comp_squash", "Compressor Amount", lin (0.0f, 1.0f), 0.4f, pct());
+        flt ("comp_ratio",  "Compressor Ratio",  skewed (1.0f, 20.0f, 4.0f), 4.0f,
              Attr().withStringFromValueFunction ([] (float v, int) { return juce::String (v, 1) + ":1"; }));
-        flt ("comp_speed",  "Comp Speed",  lin (0.0f, 1.0f), 0.4f, pct());
-        flt ("comp_mix",    "Comp Mix",    lin (0.0f, 1.0f), 1.0f, pct());
+        flt ("comp_speed",  "Compressor Speed",  lin (0.0f, 1.0f), 0.4f, pct());
+        flt ("comp_mix",    "Compressor Mix",    lin (0.0f, 1.0f), 1.0f, pct());
 
         // Glass EQ — 3-band tone shaping
         onOff ("eq_on", "EQ On");
@@ -210,45 +210,72 @@ namespace Params
         flt ("eq_high",    "EQ High",     lin (-12.0f, 12.0f), 0.0f, db());
 
         // VINYL.EXE — crackle, dust, hiss, wear and 33rpm wow
-        onOff ("vinyl_on", "Vinyl On");
+        onOff ("vinyl_on", "Vinyl Sim On");
         flt ("vinyl_crackle", "Vinyl Crackle", lin (0.0f, 1.0f), 0.4f, pct());
         flt ("vinyl_wear",    "Vinyl Wear",    lin (0.0f, 1.0f), 0.3f, pct());
         flt ("vinyl_wow",     "Vinyl Wow",     lin (0.0f, 1.0f), 0.2f, pct());
         flt ("vinyl_mix",     "Vinyl Mix",     lin (0.0f, 1.0f), 1.0f, pct());
 
         // TTS.EXE — robotic text-to-speech voice
-        onOff ("tts_on", "TTS On");
-        flt ("tts_pitch", "TTS Pitch", skewed (40.0f, 400.0f, 120.0f), 110.0f, hz());
-        flt ("tts_metal", "TTS Metal", lin (0.0f, 0.95f), 0.6f, pct());
-        flt ("tts_buzz",  "TTS Buzz",  lin (0.0f, 1.0f), 0.3f, pct());
-        flt ("tts_mix",   "TTS Mix",   lin (0.0f, 1.0f), 0.7f, pct());
+        onOff ("tts_on", "Robot Voice On");
+        flt ("tts_pitch", "Robot Pitch", skewed (40.0f, 400.0f, 120.0f), 110.0f, hz());
+        flt ("tts_metal", "Robot Metal", lin (0.0f, 0.95f), 0.6f, pct());
+        flt ("tts_buzz",  "Robot Buzz",  lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("tts_mix",   "Robot Mix",   lin (0.0f, 1.0f), 0.7f, pct());
 
         // PUMP.EXE — tempo-synced sidechain pumping
-        onOff ("pump_on", "Pump On");
-        p.push_back (std::make_unique<APC> (pid ("pump_div"), "Pump Rate", juce::StringArray { "1/2", "1/4", "1/8", "1/16" }, 1));
-        flt ("pump_depth", "Pump Depth", lin (0.0f, 1.0f), 0.7f, pct());
-        flt ("pump_shape", "Pump Release", lin (0.0f, 1.0f), 0.4f, pct());
+        onOff ("pump_on", "Sidechain Pump On");
+        p.push_back (std::make_unique<APC> (pid ("pump_div"), "Sidechain Rate", juce::StringArray { "1/2", "1/4", "1/8", "1/16" }, 1));
+        flt ("pump_depth", "Sidechain Depth", lin (0.0f, 1.0f), 0.7f, pct());
+        flt ("pump_shape", "Sidechain Release", lin (0.0f, 1.0f), 0.4f, pct());
 
         // Stereo Spread — mono-safe widener / doubler
-        onOff ("spread_on", "Spread On");
-        flt ("spread_width",  "Spread Width",  lin (0.0f, 1.0f), 0.5f, pct());
-        flt ("spread_motion", "Spread Motion", lin (0.0f, 1.0f), 0.3f, pct());
-        flt ("spread_mix",    "Spread Mix",    lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("spread_on", "Stereo Widener On");
+        flt ("spread_width",  "Widener Width",  lin (0.0f, 1.0f), 0.5f, pct());
+        flt ("spread_motion", "Widener Motion", lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("spread_mix",    "Widener Mix",    lin (0.0f, 1.0f), 1.0f, pct());
+
+        // Transient Shaper
+        onOff ("trans_on", "Transient Shaper On");
+        flt ("trans_attack",  "Transient Attack",  lin (-1.0f, 1.0f), 0.4f, bip());
+        flt ("trans_sustain", "Transient Sustain", lin (-1.0f, 1.0f), 0.0f, bip());
+        flt ("trans_mix",     "Transient Mix",     lin (0.0f, 1.0f), 1.0f, pct());
+
+        // Auto-Wah (envelope filter)
+        onOff ("wah_on", "Auto-Wah On");
+        flt ("wah_sens",  "Auto-Wah Sensitivity", lin (0.0f, 1.0f), 0.5f, pct());
+        flt ("wah_range", "Auto-Wah Range",       lin (0.0f, 1.0f), 0.6f, pct());
+        flt ("wah_reso",  "Auto-Wah Resonance",   lin (0.0f, 1.0f), 0.5f, pct());
+        flt ("wah_mix",   "Auto-Wah Mix",         lin (0.0f, 1.0f), 1.0f, pct());
+
+        // Volume Swell (auto-swell / slow gear)
+        onOff ("swell_on", "Volume Swell On");
+        flt ("swell_attack", "Swell Attack",      skewed (20.0f, 3000.0f, 400.0f), 500.0f, ms());
+        flt ("swell_sens",   "Swell Sensitivity", lin (0.0f, 1.0f), 0.5f, pct());
+        flt ("swell_mix",    "Swell Mix",         lin (0.0f, 1.0f), 1.0f, pct());
+
+        // Blur — diffused smear for huge ambient pads, with shimmer and freeze
+        onOff ("blur_on", "Blur On");
+        flt ("blur_size",    "Blur Size",    lin (0.0f, 1.0f), 0.6f, pct());
+        flt ("blur_smear",   "Blur Smear",   lin (0.0f, 1.0f), 0.6f, pct());
+        flt ("blur_shimmer", "Blur Shimmer", lin (0.0f, 1.0f), 0.0f, pct());
+        flt ("blur_mix",     "Blur Mix",     lin (0.0f, 1.0f), 0.5f, pct());
+        onOff ("blur_freeze", "Blur Freeze");
 
         // SPEAKER.EXE — cheap playback devices
-        onOff ("spk_on", "Speaker On");
-        p.push_back (std::make_unique<APC> (pid ("spk_model"), "Speaker Model", speakerNames(), 1));
-        flt ("spk_drive", "Speaker Drive", lin (0.0f, 1.0f), 0.3f, pct());
-        flt ("spk_mix",   "Speaker Mix",   lin (0.0f, 1.0f), 1.0f, pct());
+        onOff ("spk_on", "Speaker Sim On");
+        p.push_back (std::make_unique<APC> (pid ("spk_model"), "Speaker Sim Model", speakerNames(), 1));
+        flt ("spk_drive", "Speaker Sim Drive", lin (0.0f, 1.0f), 0.3f, pct());
+        flt ("spk_mix",   "Speaker Sim Mix",   lin (0.0f, 1.0f), 1.0f, pct());
 
-        // Angel Chorus
+        // Chorus
         onOff ("chorus_on", "Chorus On");
         flt ("chorus_rate",  "Chorus Rate",     skewed (0.05f, 5.0f, 0.8f), 0.6f, hz());
         flt ("chorus_depth", "Chorus Depth",    lin (0.0f, 1.0f), 0.4f, pct());
         flt ("chorus_fb",    "Chorus Feedback", lin (-0.9f, 0.9f), 0.0f, bip());
         flt ("chorus_mix",   "Chorus Mix",      lin (0.0f, 1.0f), 0.5f, pct());
 
-        // Boiling Phaser
+        // Phaser
         onOff ("phaser_on", "Phaser On");
         flt ("phaser_rate",  "Phaser Rate",     skewed (0.02f, 5.0f, 0.5f), 0.3f, hz());
         flt ("phaser_depth", "Phaser Depth",    lin (0.0f, 1.0f), 0.6f, pct());
@@ -256,13 +283,13 @@ namespace Params
         flt ("phaser_mix",   "Phaser Mix",      lin (0.0f, 1.0f), 0.5f, pct());
 
         // 9 Trem / Pan
-        onOff ("trem_on", "Trem On");
-        flt ("trem_rate",  "Trem Rate",  skewed (0.1f, 20.0f, 3.0f), 4.0f, hz());
-        flt ("trem_depth", "Trem Depth", lin (0.0f, 1.0f), 0.5f, pct());
-        flt ("trem_shape", "Trem Shape", lin (0.0f, 1.0f), 0.0f, pct());
-        flt ("trem_pan",   "Trem Pan",   lin (0.0f, 1.0f), 0.0f, pct());
+        onOff ("trem_on", "Tremolo On");
+        flt ("trem_rate",  "Tremolo Rate",  skewed (0.1f, 20.0f, 3.0f), 4.0f, hz());
+        flt ("trem_depth", "Tremolo Depth", lin (0.0f, 1.0f), 0.5f, pct());
+        flt ("trem_shape", "Tremolo Shape", lin (0.0f, 1.0f), 0.0f, pct());
+        flt ("trem_pan",   "Tremolo Pan",   lin (0.0f, 1.0f), 0.0f, pct());
 
-        // Halo Delay
+        // Delay
         onOff ("delay_on", "Delay On");
         p.push_back (std::make_unique<APC> (pid ("delay_sync"), "Delay Sync", delaySyncNames(), 0));
         flt ("delay_time", "Delay Time",     skewed (10.0f, 2000.0f, 400.0f), 350.0f, ms());
@@ -271,7 +298,7 @@ namespace Params
         flt ("delay_mix",  "Delay Mix",      lin (0.0f, 1.0f), 0.3f, pct());
         onOff ("delay_pp", "Delay Ping-Pong", true);
 
-        // Cathedral Verb
+        // Reverb
         onOff ("verb_on", "Reverb On");
         flt ("verb_size",  "Reverb Size",  lin (0.0f, 1.0f), 0.6f, pct());
         flt ("verb_damp",  "Reverb Damping", lin (0.0f, 1.0f), 0.4f, pct());

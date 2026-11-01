@@ -15,7 +15,9 @@ EvilFXProcessor::EvilFXProcessor()
         slots.push_back (std::make_unique<Slot> (std::move (module), raw (apvts, onId)));
     };
     // must match the order in Rack.h
+    add (std::make_unique<TransientShaper> (apvts), "trans_on");
     add (std::make_unique<CrimsonFilter>  (apvts), "filter_on");
+    add (std::make_unique<AutoWah>        (apvts), "wah_on");
     add (std::make_unique<GlassEQ>        (apvts), "eq_on");
     add (std::make_unique<ScorchDrive>    (apvts), "gloss_on");
     add (std::make_unique<Nightcore>      (apvts), "pitch_on");
@@ -34,11 +36,13 @@ EvilFXProcessor::EvilFXProcessor()
     add (std::make_unique<xfx::Glitch>    (apvts, transport), "glitch_on");
     add (std::make_unique<BeatGate>       (apvts, transport), "gate_on");
     add (std::make_unique<xfx::Pump>      (apvts, transport), "pump_on");
+    add (std::make_unique<VolumeSwell>    (apvts), "swell_on");
     add (std::make_unique<AngelChorus>    (apvts), "chorus_on");
     add (std::make_unique<BoilingPhaser>  (apvts), "phaser_on");
     add (std::make_unique<TremPan>        (apvts), "trem_on");
     add (std::make_unique<StereoSpread>   (apvts), "spread_on");
     add (std::make_unique<HaloDelay>      (apvts), "delay_on");
+    add (std::make_unique<xfx::Blur>      (apvts), "blur_on");
     add (std::make_unique<CathedralVerb>  (apvts), "verb_on");
     add (std::make_unique<GloryComp>      (apvts), "comp_on");
     add (std::make_unique<SpeakerSim>     (apvts), "spk_on");

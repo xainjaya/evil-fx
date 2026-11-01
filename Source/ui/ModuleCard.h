@@ -249,9 +249,15 @@ private:
         g.drawText (spec.title, titleArea.translated (0.0f, 1.0f), juce::Justification::centredLeft);
         g.setColour (juce::Colours::white);
         g.drawText (spec.title, titleArea, juce::Justification::centredLeft);
-        g.setFont (sans (11.0f));
-        g.setColour (juce::Colours::white.withAlpha (0.85f));
-        g.drawText (spec.tagline, titleArea, juce::Justification::centredRight);
+        // the little tagline only shows when it fits beside the title
+        const float titleW = juce::GlyphArrangement::getStringWidth (sans (15.5f, true), spec.title);
+        const float tagW = juce::GlyphArrangement::getStringWidth (sans (11.0f), spec.tagline);
+        if (titleW + tagW + 10.0f < titleArea.getWidth())
+        {
+            g.setFont (sans (11.0f));
+            g.setColour (juce::Colours::white.withAlpha (0.85f));
+            g.drawText (spec.tagline, titleArea, juce::Justification::centredRight);
+        }
 
         g.setColour (juce::Colours::white.withAlpha (0.9f));
         g.strokePath (shape, juce::PathStrokeType (1.3f));

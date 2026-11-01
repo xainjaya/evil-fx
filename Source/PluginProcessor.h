@@ -3,7 +3,7 @@
 #include "Params.h"
 #include "Presets.h"
 #include "dsp/NetModules.h"
-#include "dsp/ExtraModules.h"
+#include "dsp/AmbientModules.h"
 #include "Rack.h"
 
 class EvilFXProcessor : public juce::AudioProcessor,
@@ -11,9 +11,9 @@ class EvilFXProcessor : public juce::AudioProcessor,
 {
 public:
     // Order of modules in the chain (also the order of cards in the UI)
-    enum ModuleIndex { Filter, EQ, Gloss, Pitch, Ring, TTS, Codec, Crush, Dial, VinylFx, LoBit, Packet, Buffer, Corrupt,
-                       Lag, Jitter, GlitchFx, Gate, PumpFx, Chorus, Phaser, Trem, Spread, Delay, Verb, Comp, Speaker,
-                       NumModules };
+    enum ModuleIndex { Transient, Filter, Wah, EQ, Gloss, Pitch, Ring, TTS, Codec, Crush, Dial, VinylFx, LoBit, Packet,
+                       Buffer, Corrupt, Lag, Jitter, GlitchFx, Gate, PumpFx, Swell, Chorus, Phaser, Trem, Spread,
+                       Delay, BlurFx, Verb, Comp, Speaker, NumModules };
 
     EvilFXProcessor();
     ~EvilFXProcessor() override;

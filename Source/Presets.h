@@ -21,6 +21,28 @@ namespace Presets
         static const std::vector<Preset> p {
             { "Start", "Init (Clean)", {} },
 
+            //==================================================================== Studio Tools
+            { "Studio Tools", "Punchy Drums", {
+                { "trans_on", 1 }, { "trans_attack", 0.7f }, { "trans_sustain", -0.25f },
+                { "comp_on", 1 }, { "comp_squash", 0.35f }, { "comp_ratio", 4 }, { "comp_speed", 0.3f },
+                { "eq_on", 1 }, { "eq_low", 3 }, { "eq_high", 2 } } },
+            { "Studio Tools", "Soft Keys", {
+                { "trans_on", 1 }, { "trans_attack", -0.6f }, { "trans_sustain", 0.35f },
+                { "eq_on", 1 }, { "eq_high", -3 },
+                { "verb_on", 1 }, { "verb_size", 0.6f }, { "verb_mix", 0.25f } } },
+            { "Studio Tools", "Funky Wah", {
+                { "wah_on", 1 }, { "wah_sens", 0.65f }, { "wah_range", 0.75f }, { "wah_reso", 0.65f },
+                { "gloss_on", 1 }, { "gloss_drive", 3 }, { "gloss_mix", 0.5f } } },
+            { "Studio Tools", "Vocal Polish", {
+                { "eq_on", 1 }, { "eq_low", -3 }, { "eq_mid", 2 }, { "eq_midfreq", 3000 }, { "eq_high", 3 },
+                { "comp_on", 1 }, { "comp_squash", 0.45f }, { "comp_ratio", 4 }, { "comp_speed", 0.35f },
+                { "gloss_on", 1 }, { "gloss_drive", 3 }, { "gloss_mix", 0.4f },
+                { "verb_on", 1 }, { "verb_size", 0.45f }, { "verb_mix", 0.12f } } },
+            { "Studio Tools", "Wide Mix Bus", {
+                { "spread_on", 1 }, { "spread_width", 0.4f }, { "spread_motion", 0.1f },
+                { "comp_on", 1 }, { "comp_squash", 0.3f }, { "comp_ratio", 2.5f }, { "comp_speed", 0.6f },
+                { "eq_on", 1 }, { "eq_low", 1.5f }, { "eq_high", 2 } } },
+
             //==================================================================== Heavenly
             { "Heavenly", "Crimson Glass Pad", {
                 { "chorus_on", 1 }, { "chorus_rate", 0.4f }, { "chorus_depth", 0.55f }, { "chorus_mix", 0.5f },
@@ -61,6 +83,61 @@ namespace Presets
             { "Heavenly", "Glory Glue", {
                 { "comp_on", 1 }, { "comp_squash", 0.45f }, { "comp_ratio", 4 }, { "comp_speed", 0.35f },
                 { "gloss_on", 1 }, { "gloss_drive", 4 }, { "gloss_tone", 0.15f }, { "gloss_mix", 0.6f } } },
+
+            //==================================================================== Ambient Pads
+            { "Ambient Pads", "Giant Ambient Pad", {
+                { "blur_on", 1 }, { "blur_size", 0.9f }, { "blur_smear", 0.85f }, { "blur_mix", 0.6f },
+                { "swell_on", 1 }, { "swell_attack", 900 }, { "swell_sens", 0.6f },
+                { "spread_on", 1 }, { "spread_width", 0.7f }, { "spread_motion", 0.4f },
+                { "verb_on", 1 }, { "verb_size", 1.0f }, { "verb_damp", 0.3f }, { "verb_mix", 0.4f } } },
+            { "Ambient Pads", "Shimmer Heaven", {
+                { "blur_on", 1 }, { "blur_size", 0.8f }, { "blur_smear", 0.8f }, { "blur_shimmer", 0.6f }, { "blur_mix", 0.55f },
+                { "chorus_on", 1 }, { "chorus_rate", 0.2f }, { "chorus_depth", 0.4f }, { "chorus_mix", 0.3f },
+                { "verb_on", 1 }, { "verb_size", 0.9f }, { "verb_mix", 0.45f } } },
+            { "Ambient Pads", "Glacier", {
+                { "blur_on", 1 }, { "blur_size", 1.0f }, { "blur_smear", 0.92f }, { "blur_shimmer", 0.3f }, { "blur_mix", 0.65f },
+                { "eq_on", 1 }, { "eq_low", -4 }, { "eq_high", 3 },
+                { "spread_on", 1 }, { "spread_width", 0.8f }, { "spread_motion", 0.3f } } },
+            { "Ambient Pads", "Endless Swell", {
+                { "swell_on", 1 }, { "swell_attack", 1600 }, { "swell_sens", 0.6f },
+                { "blur_on", 1 }, { "blur_size", 0.8f }, { "blur_smear", 0.8f }, { "blur_mix", 0.5f },
+                { "delay_on", 1 }, { "delay_sync", 7 }, { "delay_fb", 0.5f }, { "delay_tone", 0.6f }, { "delay_mix", 0.25f },
+                { "verb_on", 1 }, { "verb_size", 0.9f }, { "verb_mix", 0.45f } } },
+            { "Ambient Pads", "Angel Swell Strings", {
+                { "swell_on", 1 }, { "swell_attack", 700 }, { "swell_sens", 0.55f },
+                { "chorus_on", 1 }, { "chorus_rate", 0.35f }, { "chorus_depth", 0.5f }, { "chorus_mix", 0.4f },
+                { "blur_on", 1 }, { "blur_size", 0.7f }, { "blur_smear", 0.7f }, { "blur_shimmer", 0.4f }, { "blur_mix", 0.4f },
+                { "spread_on", 1 }, { "spread_width", 0.6f } } },
+            { "Ambient Pads", "Underwater Pad", {
+                { "filter_on", 1 }, { "filter_mode", 0 }, { "filter_cutoff", 900 }, { "filter_reso", 1.5f },
+                { "filter_lforate", 0.1f }, { "filter_lfodepth", 0.8f },
+                { "chorus_on", 1 }, { "chorus_rate", 0.3f }, { "chorus_depth", 0.7f }, { "chorus_mix", 0.5f },
+                { "blur_on", 1 }, { "blur_size", 0.7f }, { "blur_smear", 0.7f }, { "blur_mix", 0.5f } } },
+            { "Ambient Pads", "Lo-Fi Dream Pad", {
+                { "blur_on", 1 }, { "blur_size", 0.6f }, { "blur_smear", 0.7f }, { "blur_mix", 0.45f },
+                { "jit_on", 1 }, { "jit_wow", 0.4f }, { "jit_flutter", 0.2f }, { "jit_drift", 0.3f },
+                { "vinyl_on", 1 }, { "vinyl_crackle", 0.3f }, { "vinyl_wear", 0.4f }, { "vinyl_wow", 0.15f },
+                { "eq_on", 1 }, { "eq_high", -4 } } },
+            { "Ambient Pads", "Cassette Ambient", {
+                { "jit_on", 1 }, { "jit_wow", 0.5f }, { "jit_flutter", 0.3f }, { "jit_drift", 0.4f },
+                { "gloss_on", 1 }, { "gloss_drive", 6 }, { "gloss_tone", -0.3f },
+                { "blur_on", 1 }, { "blur_size", 0.7f }, { "blur_smear", 0.75f }, { "blur_mix", 0.5f },
+                { "verb_on", 1 }, { "verb_size", 0.7f }, { "verb_mix", 0.3f } } },
+            { "Ambient Pads", "Dial-Up Dreamscape", {
+                { "dial_on", 1 }, { "dial_band", 0.5f }, { "dial_noise", 0.25f }, { "dial_crackle", 0.2f }, { "dial_mix", 0.4f },
+                { "blur_on", 1 }, { "blur_size", 0.9f }, { "blur_smear", 0.85f }, { "blur_mix", 0.6f },
+                { "verb_on", 1 }, { "verb_size", 0.9f }, { "verb_mix", 0.35f } } },
+            { "Ambient Pads", "Bitcrushed Cathedral", {
+                { "crush_on", 1 }, { "crush_bits", 8 }, { "crush_rate", 3 }, { "crush_mix", 0.5f },
+                { "blur_on", 1 }, { "blur_size", 0.8f }, { "blur_smear", 0.8f }, { "blur_mix", 0.55f },
+                { "verb_on", 1 }, { "verb_size", 1.0f }, { "verb_mix", 0.5f } } },
+            { "Ambient Pads", "Sidechained Cloud", {
+                { "pump_on", 1 }, { "pump_div", 1 }, { "pump_depth", 0.7f }, { "pump_shape", 0.5f },
+                { "blur_on", 1 }, { "blur_size", 0.8f }, { "blur_smear", 0.8f }, { "blur_mix", 0.6f },
+                { "verb_on", 1 }, { "verb_size", 0.8f }, { "verb_mix", 0.35f } } },
+            { "Ambient Pads", "Nightcore Halo", {
+                { "pitch_on", 1 }, { "pitch_semi", 12 }, { "pitch_window", 0.8f }, { "pitch_mix", 0.3f },
+                { "blur_on", 1 }, { "blur_size", 0.85f }, { "blur_smear", 0.85f }, { "blur_shimmer", 0.5f }, { "blur_mix", 0.6f } } },
 
             //==================================================================== Internet Era
             { "Internet Era", "Dial-Up 1999", {

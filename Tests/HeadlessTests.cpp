@@ -117,7 +117,8 @@ void testEachModule()
         { "lobit", "lobit_" }, { "codec", "codec_" }, { "packet", "pkt_" }, { "corrupt", "corrupt_" },
         { "lag", "lag_" }, { "jitter", "jit_" }, { "speaker", "spk_" }, { "pitch", "pitch_" }, { "ring", "ring_" },
         { "glitch", "glitch_" }, { "gate", "gate_" }, { "comp", "comp_" }, { "eq", "eq_" }, { "vinyl", "vinyl_" },
-        { "tts", "tts_" }, { "pump", "pump_" }, { "spread", "spread_" }, { "chorus", "chorus_" }, { "phaser", "phaser_" }, { "trem", "trem_" }, { "delay", "delay_" }, { "verb", "verb_" } };
+        { "tts", "tts_" }, { "pump", "pump_" }, { "spread", "spread_" }, { "trans", "trans_" }, { "wah", "wah_" },
+        { "swell", "swell_" }, { "blur", "blur_" }, { "chorus", "chorus_" }, { "phaser", "phaser_" }, { "trem", "trem_" }, { "delay", "delay_" }, { "verb", "verb_" } };
 
     for (auto& [name, prefix] : modules)
     {
@@ -251,7 +252,8 @@ void snapshot (const juce::File& file, int theme)
     setParam (p, "codec_on", 1); setParam (p, "verb_on", 1); setParam (p, "delay_on", 1); setParam (p, "delay_sync", 4);
     setParam (p, "corrupt_on", 1); setParam (p, "spk_on", 1); setParam (p, "glitch_on", 1); setParam (p, "gate_on", 1);
     setParam (p, "chorus_on", 1); setParam (p, "comp_on", 1); setParam (p, "pitch_on", 1);
-    setParam (p, "vinyl_on", 1); setParam (p, "eq_on", 1);
+    setParam (p, "vinyl_on", 1); setParam (p, "eq_on", 1); setParam (p, "blur_on", 1); setParam (p, "swell_on", 1);
+    setParam (p, "trans_on", 1); setParam (p, "wah_on", 1);
     p.apvts.state.setProperty ("vizOn", true, nullptr);
     p.apvts.state.setProperty ("theme", theme, nullptr);
     run (p, 1.0);

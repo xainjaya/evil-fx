@@ -49,6 +49,13 @@ private:
         bool empty = true;
     };
 
+    class SiteLink : public juce::Button
+    {
+    public:
+        SiteLink() : juce::Button ("xainjaya.com") {}
+        void paintButton (juce::Graphics&, bool hover, bool down) override;
+    };
+
     class MoreHint : public juce::Button
     {
     public:
@@ -71,7 +78,6 @@ private:
     void showNote (const juce::String&);
     void renderBackground();
     void drawLogo (juce::Graphics&, juce::Rectangle<float>);
-    void drawBadge (juce::Graphics&, juce::Rectangle<int>, const juce::String& top, const juce::String& bottom, juce::Colour, juce::Colour);
 
     EvilFXProcessor& proc;
     aero::LookAndFeel lnf;
@@ -79,6 +85,7 @@ private:
     juce::Viewport viewport;
     RackArea rackArea;
     MoreHint moreHint;
+    SiteLink siteBtn;
     juce::OwnedArray<aero::ModuleCard> cards;   // every effect, in chain order
     std::vector<aero::CardSpec> specs;
     std::unique_ptr<aero::ModuleCard> master;
@@ -90,7 +97,7 @@ private:
     juce::TooltipWindow tooltips { this, 600 };
     juce::Array<juce::File> userFiles;
 
-    juce::Rectangle<int> toolbarArea, counterArea, statusArea, marqueeArea, bpmField, latField, grField;
+    juce::Rectangle<int> toolbarArea, statusArea, marqueeArea, bpmField, latField, grField;
     juce::String lastRack, note;
     int noteTicks = 0, inRack = 0;
     float marqueeX = 0.0f;

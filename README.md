@@ -5,7 +5,7 @@ By [Xain Jaya](https://xainjaya.com). VST3 · AU · LV2 · Standalone. Windows, 
 
 ![Evil FX](docs/screenshot.png)
 
-27 effects, one tidy chain — but you only see the ones you add. Hit **+ ADD FX**, pick an effect from the categorized menu and its card drops into your **rack** (picking one that's already there jumps to it). Remove a card with its X, or bypass it with its power button. Effects that are off cost no CPU, and a safety limiter at the end keeps anything from blowing up your speakers.
+31 effects, one tidy chain — but you only see the ones you add. Hit **+ ADD FX**, pick an effect from the categorized menu and its card drops into your **rack** (picking one that's already there jumps to it). Remove a card with its X, or bypass it with its power button. Effects that are off cost no CPU, and a safety limiter at the end keeps anything from blowing up your speakers.
 
 ---
 
@@ -15,52 +15,57 @@ Signal always flows in this order, whichever effects you add.
 
 | # | Effect | What it does | Controls |
 |---|--------|--------------|----------|
-| 1 | **Crimson Filter** | Resonant filter (LP / BP / HP) with an LFO sweep | Mode, Cutoff, Reso, LFO Rate, LFO Depth |
-| 2 | **Glass EQ** | 3-band EQ: low shelf, sweepable mid, high shelf | Low, Mid, Mid Freq, High |
-| 3 | **Scorch Drive** | Warm saturation with tilt EQ and auto-gain | Drive, Tone, Mix |
-| 4 | **NIGHTCORE.EXE** | Pitch shifter, ±12 semitones | Pitch, Grain, Mix |
-| 5 | **RINGTONE.EXE** | Ring modulator; Warble makes it a polyphonic-ringtone arpeggio | Freq, Shape, Warble, Mix |
-| 6 | **TTS.EXE** | Robotic text-to-speech voice (metallic comb + buzz) | Pitch, Metal, Buzz, Mix |
-| 7 | **CODEC.EXE** | 90s web audio: 22–5.5 kHz through 8-bit PCM, u-Law, A-Law or IMA ADPCM | Rate, Codec, Aliasing, Mix |
-| 8 | **8BIT.EXE** | Bit-depth + sample-rate reduction | Bits, Rate, Mix |
-| 9 | **DIALUP.EXE** | Phone line with hiss, hum, crackle and optional 56k modem squeal | Band, Noise, Crackle, Mix, Modem |
-| 10 | **VINYL.EXE** | Record crackle, dust pops, worn-out highs and 33⅓ rpm wow | Crackle, Wear, Wow, Mix |
-| 11 | **LOBITRATE.EXE** | Real spectral MP3-style codec artifacts ("swirlies") | Bitrate, Swirl, Mix |
-| 12 | **PACKETLOSS.EXE** | VoIP dropouts in bursts — robot buzz, silence or comfort noise | Loss, Packet, Concealment, Mix |
-| 13 | **BUFFERING.EXE** | Streaming stutters and dropouts | Chance, Slice, Dropout, Mix |
-| 14 | **CORRUPT.EXE** | Bit flips and reversed fragments, like a damaged download | Amount, Bits, Reverse, Mix |
-| 15 | **LAG.EXE** | Lag spikes: slows down, then fast-forwards to catch up | Chance, Length, Depth, Mix |
-| 16 | **JITTER.EXE** | Wow, flutter and clock drift | Wow, Flutter, Drift, Mix |
-| 17 | **GLITCH.EXE** 🎵 | Beat repeat / stutter / reverse / tape stop on the grid | Division, Style, Chance, Mix |
-| 18 | **GATE.EXE** 🎵 | Rhythmic gate with 8 patterns | Pattern, Division, Depth, Smooth |
-| 19 | **PUMP.EXE** 🎵 | Sidechain-style pumping on 1/2 to 1/16 notes | Rate, Depth, Release |
-| 20 | **Angel Chorus** | Lush stereo chorus | Rate, Depth, Feedback, Mix |
-| 21 | **Cloud Phaser** | Multi-stage phaser | Rate, Depth, Feedback, Mix |
-| 22 | **Trem / Pan** | Tremolo that morphs into auto-pan | Rate, Depth, Shape, Pan |
-| 23 | **Stereo Spread** | Mono-safe widener with slow motion | Width, Motion, Mix |
-| 24 | **Halo Delay** 🎵 | Stereo / ping-pong delay with tone and tempo sync | Sync, Time, Feedback, Tone, Mix |
-| 25 | **Cathedral Verb** | Big hall reverb | Size, Damp, Width, Mix |
-| 26 | **Glory Comp** | Easy compressor with auto makeup | Squash, Ratio, Speed, Mix |
-| 27 | **SPEAKER.EXE** | PC Speaker, Laptop, Flip Phone, Earbuds, CRT TV, Boombox | Model, Drive, Mix |
+| 1 | **Transient Shaper** | Boost or soften attacks and tails | Attack, Sustain, Mix |
+| 2 | **Filter** | Resonant filter (LP / BP / HP) with an LFO sweep | Mode, Cutoff, Reso, LFO Rate, LFO Depth |
+| 3 | **Auto-Wah** | Envelope filter: play harder, it opens further | Sens, Range, Reso, Mix |
+| 4 | **EQ** | 3-band EQ: low shelf, sweepable mid, high shelf | Low, Mid, Mid Freq, High |
+| 5 | **Saturation** | Warm drive with tilt EQ and auto-gain | Drive, Tone, Mix |
+| 6 | **Pitch Shifter** | ±12 semitones | Pitch, Grain, Mix |
+| 7 | **Ring Modulator** | Ring mod with an optional ringtone-style arpeggio | Freq, Shape, Arp, Mix |
+| 8 | **Robot Voice** | Metallic text-to-speech robot | Pitch, Metal, Buzz, Mix |
+| 9 | **Lo-Fi Codec** | 90s audio: 22–5.5 kHz through 8-bit PCM, u-Law, A-Law or IMA ADPCM | Rate, Codec, Aliasing, Mix |
+| 10 | **Bitcrusher** | Bit-depth + sample-rate reduction | Bits, Rate, Mix |
+| 11 | **Telephone** | Phone line with hiss, hum, crackle and optional modem squeal | Band, Noise, Crackle, Mix, Modem |
+| 12 | **Vinyl Sim** | Crackle, dust pops, worn highs and 33⅓ rpm wow | Crackle, Wear, Wow, Mix |
+| 13 | **MP3 Compression** | Real spectral low-bitrate codec artifacts | Bitrate, Artifacts, Mix |
+| 14 | **Packet Loss** | VoIP dropouts — robot buzz, silence or comfort noise | Loss, Packet, Concealment, Mix |
+| 15 | **Stutter** | Streaming-style stutters and dropouts | Chance, Slice, Dropout, Mix |
+| 16 | **Data Corruption** | Bit flips and reversed fragments | Amount, Bits, Reverse, Mix |
+| 17 | **Varispeed** | Slows down, then speeds up to catch up (lag spike) | Chance, Length, Depth, Mix |
+| 18 | **Wow & Flutter** | Tape wow, flutter and clock drift | Wow, Flutter, Drift, Mix |
+| 19 | **Beat Repeat 🎵** | Repeat / stutter / reverse / tape stop on the grid | Division, Style, Chance, Mix |
+| 20 | **Trance Gate 🎵** | Rhythmic gate with 8 patterns | Pattern, Division, Depth, Smooth |
+| 21 | **Sidechain Pump 🎵** | Ducking on 1/2 to 1/16 notes | Rate, Depth, Release |
+| 22 | **Volume Swell** | Fades in every new note or chord | Attack, Sens, Mix |
+| 23 | **Chorus** | Lush stereo chorus | Rate, Depth, Feedback, Mix |
+| 24 | **Phaser** | Multi-stage phaser | Rate, Depth, Feedback, Mix |
+| 25 | **Tremolo / Pan** | Tremolo that morphs into auto-pan | Rate, Depth, Shape, Pan |
+| 26 | **Stereo Widener** | Mono-safe widener with slow motion | Width, Motion, Mix |
+| 27 | **Delay 🎵** | Stereo / ping-pong delay with tone and tempo sync | Sync, Time, Feedback, Tone, Mix |
+| 28 | **Blur** | Smears everything into a huge ambient wash. Shimmer adds octave-up sparkle, Freeze holds the sound forever | Size, Smear, Shimmer, Mix, Freeze |
+| 29 | **Reverb** | Big hall reverb | Size, Damp, Width, Mix |
+| 30 | **Compressor** | Easy compressor with auto makeup | Amount, Ratio, Speed, Mix |
+| 31 | **Speaker Sim** | PC speaker, laptop, flip phone, earbuds, CRT TV, boombox | Model, Drive, Mix |
 | — | **Master** | Input / output gain, stereo width, global mix, safety limiter + meter | |
 
 🎵 = locks to your project tempo. With the transport stopped it keeps running on its own clock at the project BPM, so you can still hear it.
 
 ## Features
 
-- **+ ADD FX menu** — effects grouped into Tone & Dynamics, Pitch & Voice, Lo-Fi & Internet Damage, Rhythm (BPM synced), and Space & Motion. Ticks show what's already in your rack.
+- **+ ADD FX menu** — effects grouped into Tone & Dynamics, Pitch & Voice, Lo-Fi & Internet Damage, Rhythm (BPM synced), Modulation & Stereo, and Ambient & Space. Ticks show what's already in your rack.
 - **Full-width rack** — 5 cards across, scrolls when you add more, with a "more FX below" button and a glow on the card you just added or jumped to.
-- **48 factory presets** in categories: Heavenly, Internet Era, Rhythm & Glitch, Lo-Fi & Speakers, Chaos.
+- **65 factory presets** in categories: Start, Studio Tools, Heavenly, Ambient Pads, Internet Era, Rhythm & Glitch, Lo-Fi & Speakers, Chaos.
 - **Save your own presets** — hit **SAVE**. They're stored in `Documents/Evil FX/Presets` and appear under *Your Presets*. Share the `.evilfx` files with friends.
 - **RANDOM** — switches on a few random effects with random settings.
-- **Themes** — Frutiger Metro (default), Crimson Grid, Aero Sky and Midnight, saved with your project.
+- **Themes** — Aero Sky (default), Frutiger Metro and Crimson Grid, saved with your project.
 
 ![Themes](docs/themes.png)
 
 - **VISUALIZER.EXE** — WinAmp-style spectrum bars or scope. Off by default; zero cost while off.
 - **Lightweight** — the background is drawn once per theme, the UI only redraws what changes, and the audio thread never allocates.
 - **Safe** — click-free switching, latency reported to your DAW, NaN guard, and a safety limiter.
-- **? button** — quick help inside the plugin.
+- **? button** — quick help inside the plugin. The **xainjaya.com** button at the top right opens the website.
+- **Huge ambient pads** — try the Ambient Pads presets, or Blur + Volume Swell + Reverb. Hit Freeze on Blur to hold a chord forever.
 
 ## CPU cost
 
@@ -68,16 +73,17 @@ Measured with `EvilFXTests --bench` (Release, 48 kHz stereo, one desktop core). 
 
 | Effect | CPU | Effect | CPU | Effect | CPU |
 |---|---|---|---|---|---|
-| Crimson Filter | 0.06 % | DIALUP.EXE | 0.23 % | PUMP.EXE | 0.08 % |
-| Glass EQ | 0.07 % | VINYL.EXE | 0.14 % | Angel Chorus | 0.12 % |
-| Scorch Drive | 0.21 % | LOBITRATE.EXE | 1.73 % | Cloud Phaser | 0.40 % |
-| NIGHTCORE.EXE | 0.14 % | PACKETLOSS.EXE | 0.03 % | Trem / Pan | 0.14 % |
-| RINGTONE.EXE | 0.22 % | BUFFERING.EXE | 0.05 % | Stereo Spread | 0.08 % |
-| TTS.EXE | 0.27 % | CORRUPT.EXE | 0.06 % | Halo Delay | 0.19 % |
-| CODEC.EXE | 0.13 % | LAG.EXE | 0.03 % | Cathedral Verb | 0.25 % |
-| 8BIT.EXE | 0.02 % | JITTER.EXE | 0.09 % | Glory Comp | 0.13 % |
-| GLITCH.EXE | 0.03 % | GATE.EXE | 0.03 % | SPEAKER.EXE | 0.33 % |
-| | | | | **All 27 on** | **~5 %** |
+| Filter | 0.06 % | Telephone | 0.23 % | Sidechain Pump | 0.08 % |
+| EQ | 0.07 % | Vinyl Sim | 0.14 % | Chorus | 0.12 % |
+| Saturation | 0.21 % | MP3 Compression | 1.73 % | Phaser | 0.40 % |
+| Pitch Shifter | 0.14 % | Packet Loss | 0.03 % | Tremolo / Pan | 0.14 % |
+| Ring Modulator | 0.22 % | Stutter | 0.05 % | Stereo Widener | 0.08 % |
+| Robot Voice | 0.27 % | Data Corruption | 0.06 % | Delay | 0.19 % |
+| Lo-Fi Codec | 0.13 % | Varispeed | 0.03 % | Reverb | 0.25 % |
+| Bitcrusher | 0.02 % | Wow & Flutter | 0.09 % | Compressor | 0.13 % |
+| Beat Repeat | 0.03 % | Trance Gate | 0.03 % | Speaker Sim | 0.33 % |
+| Blur | 0.60 % | Transient Shaper | 0.17 % | Volume Swell | 0.12 % |
+| Auto-Wah | 0.07 % | | | **All 31 on** | **~6 %** |
 
 ## Building
 
@@ -120,7 +126,8 @@ Source/
   dsp/Modules.h         core effects + Slot wrapper (power switch / fades)
   dsp/NetModules.h      internet-era pack (codec, packet loss, corrupt, lag, jitter, speaker)
   dsp/BeatModules.h     glitch, gate, nightcore, ringtone, glory comp
-  dsp/ExtraModules.h    glass EQ, vinyl, TTS, pump, stereo spread
+  dsp/ExtraModules.h    EQ, vinyl, robot voice, sidechain pump, stereo widener
+  dsp/AmbientModules.h  transient shaper, auto-wah, volume swell, blur
   ui/EvilLookAndFeel.h  glossy crimson orbs + Win9x bevels
   ui/ModuleCard.h       one card per effect
   ui/Visualizer.h       VISUALIZER.EXE

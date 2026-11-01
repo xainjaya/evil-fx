@@ -7,16 +7,16 @@
 // can still be bypassed with its power switch; removing it from the rack turns it off.
 namespace Rack
 {
-    constexpr int numModules = 27;
+    constexpr int numModules = 31;
 
     inline const char* onId (int i)
     {
         // chain order — must match the order modules are added in EvilFXProcessor
-        static const char* ids[numModules] { "filter_on", "eq_on", "gloss_on", "pitch_on", "ring_on", "tts_on",
-                                             "codec_on", "crush_on", "dial_on", "vinyl_on", "lobit_on", "pkt_on",
-                                             "buf_on", "corrupt_on", "lag_on", "jit_on", "glitch_on", "gate_on",
-                                             "pump_on", "chorus_on", "phaser_on", "trem_on", "spread_on", "delay_on",
-                                             "verb_on", "comp_on", "spk_on" };
+        static const char* ids[numModules] { "trans_on", "filter_on", "wah_on", "eq_on", "gloss_on", "pitch_on", "ring_on",
+                                             "tts_on", "codec_on", "crush_on", "dial_on", "vinyl_on", "lobit_on", "pkt_on",
+                                             "buf_on", "corrupt_on", "lag_on", "jit_on", "glitch_on", "gate_on", "pump_on",
+                                             "swell_on", "chorus_on", "phaser_on", "trem_on", "spread_on", "delay_on",
+                                             "blur_on", "verb_on", "comp_on", "spk_on" };
         return ids[juce::jlimit (0, numModules - 1, i)];
     }
 

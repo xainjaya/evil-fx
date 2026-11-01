@@ -12,69 +12,78 @@ namespace
     constexpr int headerH = 96, toolbarH = 34, statusH = 26, margin = 14, gap = 10, stripH = 150, cols = 5, footerH = 30;
     const char* kMarquee =
         "  *** Welcome to Evil FX v" EVIL_VERSION " ***  hit + ADD FX to build your chain  ~  "
-        "GLITCH, GATE and PUMP lock to your project tempo  ~  hit SAVE to keep your own presets  ~  "
+        "Beat Repeat, Trance Gate and Sidechain Pump lock to your project tempo  ~  try Blur + Freeze for giant pads  ~  hit SAVE to keep your own presets  ~  "
         "hit RANDOM for happy accidents  ~  pick a THEME you like  ~  double-click any knob to reset it  ~  "
         "the safety limiter keeps your speakers alive  ~  free & open source forever  ~  sign the guestbook @ xainjaya.com  ";
 
     std::vector<CardSpec> moduleSpecs()
     {
         std::vector<CardSpec> s {
-            { 0, "Crimson Filter", "sweep", false, "filter_on",
+            { 0, "Transient Shaper", "punch", false, "trans_on",
+              { { "trans_attack", "Attack" }, { "trans_sustain", "Sustain" }, { "trans_mix", "Mix" } }, {}, {} },
+            { 0, "Filter", "sweep", false, "filter_on",
               { { "filter_cutoff", "Cutoff" }, { "filter_reso", "Reso" }, { "filter_lforate", "LFO Rate" }, { "filter_lfodepth", "LFO Depth" } },
               { "filter_mode" }, {} },
-            { 0, "Glass EQ", "tone", false, "eq_on",
+            { 0, "Auto-Wah", "envelope", false, "wah_on",
+              { { "wah_sens", "Sens" }, { "wah_range", "Range" }, { "wah_reso", "Reso" }, { "wah_mix", "Mix" } }, {}, {} },
+            { 0, "EQ", "3-band", false, "eq_on",
               { { "eq_low", "Low" }, { "eq_mid", "Mid" }, { "eq_midfreq", "Mid Freq" }, { "eq_high", "High" } }, {}, {} },
-            { 0, "Scorch Drive", "heat", false, "gloss_on",
+            { 0, "Saturation", "drive", false, "gloss_on",
               { { "gloss_drive", "Drive" }, { "gloss_tone", "Tone" }, { "gloss_mix", "Mix" } }, {}, {} },
-            { 0, "NIGHTCORE.EXE", "", true, "pitch_on",
+            { 0, "Pitch Shifter", "", true, "pitch_on",
               { { "pitch_semi", "Pitch" }, { "pitch_window", "Grain" }, { "pitch_mix", "Mix" } }, {}, {} },
-            { 0, "RINGTONE.EXE", "", true, "ring_on",
-              { { "ring_freq", "Freq" }, { "ring_shape", "Shape" }, { "ring_warble", "Warble" }, { "ring_mix", "Mix" } }, {}, {} },
-            { 0, "TTS.EXE", "", true, "tts_on",
+            { 0, "Ring Modulator", "", true, "ring_on",
+              { { "ring_freq", "Freq" }, { "ring_shape", "Shape" }, { "ring_warble", "Arp" }, { "ring_mix", "Mix" } }, {}, {} },
+            { 0, "Robot Voice", "", true, "tts_on",
               { { "tts_pitch", "Pitch" }, { "tts_metal", "Metal" }, { "tts_buzz", "Buzz" }, { "tts_mix", "Mix" } }, {}, {} },
-            { 0, "CODEC.EXE", "", true, "codec_on",
+            { 0, "Lo-Fi Codec", "", true, "codec_on",
               { { "codec_alias", "Aliasing" }, { "codec_mix", "Mix" } }, { "codec_rate", "codec_type" }, {} },
-            { 0, "8BIT.EXE", "", true, "crush_on",
+            { 0, "Bitcrusher", "", true, "crush_on",
               { { "crush_bits", "Bits" }, { "crush_rate", "Rate" }, { "crush_mix", "Mix" } }, {}, {} },
-            { 0, "DIALUP.EXE", "", true, "dial_on",
+            { 0, "Telephone", "", true, "dial_on",
               { { "dial_band", "Band" }, { "dial_noise", "Noise" }, { "dial_crackle", "Crackle" }, { "dial_mix", "Mix" } },
               {}, { { "dial_modem", "Modem squeal" } } },
-            { 0, "VINYL.EXE", "", true, "vinyl_on",
+            { 0, "Vinyl Sim", "", true, "vinyl_on",
               { { "vinyl_crackle", "Crackle" }, { "vinyl_wear", "Wear" }, { "vinyl_wow", "Wow" }, { "vinyl_mix", "Mix" } }, {}, {} },
-            { 0, "LOBITRATE.EXE", "", true, "lobit_on",
-              { { "lobit_kbps", "Bitrate" }, { "lobit_swirl", "Swirl" }, { "lobit_mix", "Mix" } }, {}, {} },
-            { 0, "PACKETLOSS.EXE", "", true, "pkt_on",
+            { 0, "MP3 Compression", "", true, "lobit_on",
+              { { "lobit_kbps", "Bitrate" }, { "lobit_swirl", "Artifacts" }, { "lobit_mix", "Mix" } }, {}, {} },
+            { 0, "Packet Loss", "", true, "pkt_on",
               { { "pkt_loss", "Loss" }, { "pkt_size", "Packet" }, { "pkt_mix", "Mix" } }, { "pkt_conceal" }, {} },
-            { 0, "BUFFERING.EXE", "", true, "buf_on",
+            { 0, "Stutter", "", true, "buf_on",
               { { "buf_chance", "Chance" }, { "buf_slice", "Slice" }, { "buf_dropout", "Dropout" }, { "buf_mix", "Mix" } }, {}, {} },
-            { 0, "CORRUPT.EXE", "", true, "corrupt_on",
+            { 0, "Data Corruption", "", true, "corrupt_on",
               { { "corrupt_amount", "Amount" }, { "corrupt_bits", "Bits" }, { "corrupt_reverse", "Reverse" }, { "corrupt_mix", "Mix" } }, {}, {} },
-            { 0, "LAG.EXE", "", true, "lag_on",
+            { 0, "Varispeed", "", true, "lag_on",
               { { "lag_chance", "Chance" }, { "lag_length", "Length" }, { "lag_depth", "Depth" }, { "lag_mix", "Mix" } }, {}, {} },
-            { 0, "JITTER.EXE", "", true, "jit_on",
+            { 0, "Wow & Flutter", "", true, "jit_on",
               { { "jit_wow", "Wow" }, { "jit_flutter", "Flutter" }, { "jit_drift", "Drift" }, { "jit_mix", "Mix" } }, {}, {} },
-            { 0, "GLITCH.EXE", "", true, "glitch_on",
+            { 0, "Beat Repeat", "", true, "glitch_on",
               { { "glitch_chance", "Chance" }, { "glitch_mix", "Mix" } }, { "glitch_div", "glitch_style" }, {} },
-            { 0, "GATE.EXE", "", true, "gate_on",
+            { 0, "Trance Gate", "", true, "gate_on",
               { { "gate_depth", "Depth" }, { "gate_smooth", "Smooth" } }, { "gate_pattern", "gate_div" }, {} },
-            { 0, "PUMP.EXE", "", true, "pump_on",
+            { 0, "Sidechain Pump", "", true, "pump_on",
               { { "pump_depth", "Depth" }, { "pump_shape", "Release" } }, { "pump_div" }, {} },
-            { 0, "Angel Chorus", "choir", false, "chorus_on",
+            { 0, "Volume Swell", "fade-in", false, "swell_on",
+              { { "swell_attack", "Attack" }, { "swell_sens", "Sens" }, { "swell_mix", "Mix" } }, {}, {} },
+            { 0, "Chorus", "thicken", false, "chorus_on",
               { { "chorus_rate", "Rate" }, { "chorus_depth", "Depth" }, { "chorus_fb", "Feedback" }, { "chorus_mix", "Mix" } }, {}, {} },
-            { 0, "Cloud Phaser", "drift", false, "phaser_on",
+            { 0, "Phaser", "swirl", false, "phaser_on",
               { { "phaser_rate", "Rate" }, { "phaser_depth", "Depth" }, { "phaser_fb", "Feedback" }, { "phaser_mix", "Mix" } }, {}, {} },
-            { 0, "Trem / Pan", "motion", false, "trem_on",
+            { 0, "Tremolo / Pan", "motion", false, "trem_on",
               { { "trem_rate", "Rate" }, { "trem_depth", "Depth" }, { "trem_shape", "Shape" }, { "trem_pan", "Pan" } }, {}, {} },
-            { 0, "Stereo Spread", "wide", false, "spread_on",
+            { 0, "Stereo Widener", "wide", false, "spread_on",
               { { "spread_width", "Width" }, { "spread_motion", "Motion" }, { "spread_mix", "Mix" } }, {}, {} },
-            { 0, "Halo Delay", "echo", false, "delay_on",
+            { 0, "Delay", "echo", false, "delay_on",
               { { "delay_time", "Time" }, { "delay_fb", "Feedback" }, { "delay_tone", "Tone" }, { "delay_mix", "Mix" } },
               { "delay_sync" }, { { "delay_pp", "Ping-pong" } } },
-            { 0, "Cathedral Verb", "space", false, "verb_on",
+            { 0, "Blur", "ambient", false, "blur_on",
+              { { "blur_size", "Size" }, { "blur_smear", "Smear" }, { "blur_shimmer", "Shimmer" }, { "blur_mix", "Mix" } },
+              {}, { { "blur_freeze", "Freeze" } } },
+            { 0, "Reverb", "space", false, "verb_on",
               { { "verb_size", "Size" }, { "verb_damp", "Damp" }, { "verb_width", "Width" }, { "verb_mix", "Mix" } }, {}, {} },
-            { 0, "Glory Comp", "glue", false, "comp_on",
-              { { "comp_squash", "Squash" }, { "comp_ratio", "Ratio" }, { "comp_speed", "Speed" }, { "comp_mix", "Mix" } }, {}, {} },
-            { 0, "SPEAKER.EXE", "", true, "spk_on",
+            { 0, "Compressor", "glue", false, "comp_on",
+              { { "comp_squash", "Amount" }, { "comp_ratio", "Ratio" }, { "comp_speed", "Speed" }, { "comp_mix", "Mix" } }, {}, {} },
+            { 0, "Speaker Sim", "", true, "spk_on",
               { { "spk_drive", "Drive" }, { "spk_mix", "Mix" } }, { "spk_model" }, {} },
         };
         for (int i = 0; i < (int) s.size(); ++i)
@@ -89,11 +98,13 @@ namespace
     juce::String categoryOf (const juce::String& onId)
     {
         static const std::map<juce::String, juce::String> cat {
-            { "filter_on", "Tone & Dynamics" }, { "eq_on", "Tone & Dynamics" }, { "gloss_on", "Tone & Dynamics" }, { "comp_on", "Tone & Dynamics" },
+            { "trans_on", "Tone & Dynamics" }, { "filter_on", "Tone & Dynamics" }, { "wah_on", "Tone & Dynamics" }, { "eq_on", "Tone & Dynamics" },
+            { "gloss_on", "Tone & Dynamics" }, { "comp_on", "Tone & Dynamics" },
             { "pitch_on", "Pitch & Voice" }, { "ring_on", "Pitch & Voice" }, { "tts_on", "Pitch & Voice" },
             { "glitch_on", "Rhythm (BPM synced)" }, { "gate_on", "Rhythm (BPM synced)" }, { "pump_on", "Rhythm (BPM synced)" },
-            { "chorus_on", "Space & Motion" }, { "phaser_on", "Space & Motion" }, { "trem_on", "Space & Motion" },
-            { "spread_on", "Space & Motion" }, { "delay_on", "Space & Motion" }, { "verb_on", "Space & Motion" } };
+            { "swell_on", "Ambient & Space" }, { "blur_on", "Ambient & Space" }, { "delay_on", "Ambient & Space" }, { "verb_on", "Ambient & Space" },
+            { "chorus_on", "Modulation & Stereo" }, { "phaser_on", "Modulation & Stereo" }, { "trem_on", "Modulation & Stereo" },
+            { "spread_on", "Modulation & Stereo" } };
         auto it = cat.find (onId);
         return it != cat.end() ? it->second : juce::String ("Lo-Fi & Internet Damage");
     }
@@ -215,17 +226,6 @@ namespace
             g.setColour (juce::Colours::white.withAlpha (0.85f));
             g.fillEllipse (x - r * 0.55f, y - r * 0.6f, r * 0.5f, r * 0.32f);
         }
-    }
-
-    void paintMidnight (juce::Graphics& g, int W, int H)
-    {
-        const float w = (float) W, h = (float) H;
-        g.setGradientFill (juce::ColourGradient (juce::Colour (0xff1a0308), w * 0.5f, h * 0.3f, juce::Colour (0xff030001), w * 1.1f, h, true));
-        g.fillAll();
-        g.setColour (juce::Colour (0xffff3050).withAlpha (0.08f));
-        for (int y = 12; y < H; y += 24)
-            for (int x = 12; x < W; x += 24)
-                g.fillRect ((float) x, (float) y, 1.5f, 1.5f);
     }
 
     void paintCrimsonGrid (juce::Graphics& g, int W, int H)
@@ -360,7 +360,7 @@ namespace
 
 const juce::StringArray& EvilFXEditor::themeNames()
 {
-    static const juce::StringArray n { "Frutiger Metro", "Crimson Grid", "Aero Sky", "Midnight" };
+    static const juce::StringArray n { "Aero Sky", "Frutiger Metro", "Crimson Grid" };
     return n;
 }
 
@@ -390,6 +390,12 @@ EvilFXEditor::EvilFXEditor (EvilFXProcessor& p) : AudioProcessorEditor (p), proc
                                                  viewport.getViewPositionY() + viewport.getHeight() - footerH));
     };
     desktop.addChildComponent (moreHint);
+
+    // ---- xainjaya.com link (top right)
+    siteBtn.setTooltip ("Open xainjaya.com in your browser");
+    siteBtn.setMouseCursor (juce::MouseCursor::PointingHandCursor);
+    siteBtn.onClick = [] { juce::URL ("https://xainjaya.com").launchInDefaultBrowser(); };
+    desktop.addAndMakeVisible (siteBtn);
 
     // ---- toolbar
     addBtn.setTooltip ("Add an effect to your rack (or jump to one that's already in it)");
@@ -498,7 +504,7 @@ void EvilFXEditor::resized()
     randomBtn.setBounds (saveBtn.getRight() + 6, 41, 78, 28);
 
     auto right = juce::Rectangle<int> (margin, 6, baseW - 2 * margin, headerH - 10).removeFromRight (318).reduced (10, 14);
-    counterArea = right.removeFromLeft (110);
+    siteBtn.setBounds (right.withSizeKeepingCentre (right.getWidth(), 50));
     statusArea  = juce::Rectangle<int> (margin, baseH - statusH - 6, baseW - 2 * margin, statusH);
     auto inner = statusArea.reduced (3);
     grField  = inner.removeFromRight (120); inner.removeFromRight (3);
@@ -515,7 +521,7 @@ void EvilFXEditor::showAddMenu()
 {
     const auto rack = Rack::get (proc.apvts.state);
     juce::PopupMenu menu;
-    juce::StringArray order { "Tone & Dynamics", "Pitch & Voice", "Lo-Fi & Internet Damage", "Rhythm (BPM synced)", "Space & Motion" };
+    juce::StringArray order { "Tone & Dynamics", "Pitch & Voice", "Lo-Fi & Internet Damage", "Rhythm (BPM synced)", "Modulation & Stereo", "Ambient & Space" };
     for (auto& cat : order)
     {
         menu.addSectionHeader (cat);
@@ -669,7 +675,7 @@ void EvilFXEditor::showHelp()
         "+ ADD FX: pick effects for your rack. Ticked ones are already in it; picking one jumps to its card.\n"
         "X on a card removes it, the power button bypasses it without removing it.\n"
         "Signal flows left to right, top to bottom, in the numbered order.\n\n"
-        "GLITCH, GATE, PUMP and Halo Delay sync to your project tempo.\n\n"
+        "Beat Repeat, Trance Gate, Sidechain Pump and Delay sync to your project tempo.\nFor huge ambient pads try Blur (Freeze holds the sound forever) with Volume Swell.\n\n"
         "Presets: pick one up top, SAVE your own (Documents/Evil FX/Presets), or hit RANDOM.\n"
         "Knobs: drag up/down, double-click to reset, click the value to type one in.\n"
         "The Limiter on Master keeps the output safe; leave it on unless you know why.\n\n"
@@ -700,7 +706,7 @@ void EvilFXEditor::timerCallback()
     const int active = proc.countActiveModules(), lat = proc.getLatencySamples();
     const float gr = std::round (proc.gainReductionDb.load() * 10.0f) / 10.0f;
     const float bpm = std::round (proc.currentBpm.load() * 10.0f) / 10.0f;
-    if (active != activeModules) { activeModules = active; desktop.repaint (counterArea); }
+    activeModules = active;
     if (lat != latency || gr != shownGr || bpm != shownBpm) { latency = lat; shownGr = gr; shownBpm = bpm; desktop.repaint (statusArea); }
 
     if (viz.isOn())
@@ -727,10 +733,9 @@ void EvilFXEditor::renderBackground()
     juce::Graphics g (desktop.background);
     switch (juce::jlimit (0, themeNames().size() - 1, (int) proc.apvts.state.getProperty ("theme", 0)))
     {
-        case 1:  paintCrimsonGrid (g, baseW, baseH); break;
-        case 2:  paintAeroSky (g, baseW, baseH); break;
-        case 3:  paintMidnight (g, baseW, baseH); break;
-        default: paintFrutigerMetro (g, baseW, baseH); break;
+        case 1:  paintFrutigerMetro (g, baseW, baseH); break;
+        case 2:  paintCrimsonGrid (g, baseW, baseH); break;
+        default: paintAeroSky (g, baseW, baseH); break;   // Aero Sky is the default
     }
 }
 
@@ -774,26 +779,6 @@ void EvilFXEditor::Desktop::paint (juce::Graphics& g)
     g.setColour (col::ink.withAlpha (0.7f));
     g.setFont (sans (10.5f, true));
     g.drawText ("THEME", owner.themeBox.getBounds().translated (-52, 0).withWidth (48), juce::Justification::centredRight);
-
-    // LED counter + 88x31 buttons
-    auto counter = owner.counterArea;
-    g.setColour (juce::Colours::black);
-    g.fillRect (counter);
-    bevel (g, counter, false);
-    g.setFont (mono (9.5f, true));
-    g.setColour (juce::Colour (0xffff9c9c));
-    g.drawText ("FX ONLINE", counter.removeFromTop (18), juce::Justification::centred);
-    g.setFont (mono (22.0f, true));
-    g.setColour (juce::Colour (0xffff2a2a));
-    g.drawText (juce::String (juce::jmax (0, owner.activeModules)).paddedLeft ('0', 2) + "/" + juce::String (Rack::numModules),
-                counter.withTrimmedBottom (2), juce::Justification::centred);
-
-    const int bx = owner.counterArea.getRight() + 10, by = owner.counterArea.getY();
-    const int bw = 88, bh = (owner.counterArea.getHeight() - 4) / 2;
-    owner.drawBadge (g, { bx,      by,          bw, bh }, "XAINJAYA", ".COM",     col::w98Maroon, juce::Colours::white);
-    owner.drawBadge (g, { bx + 92, by,          bw, bh }, "ANGEL",    "APPROVED", juce::Colours::white, juce::Colour (0xffb8860b));
-    owner.drawBadge (g, { bx,      by + bh + 4, bw, bh }, "OPEN",     "SOURCE",   juce::Colour (0xff111111), col::ember);
-    owner.drawBadge (g, { bx + 92, by + bh + 4, bw, bh }, "56K",      "FRIENDLY", col::w98Brick, juce::Colours::white);
 
     // Win9x status bar
     g.setColour (col::w98Grey);
@@ -872,17 +857,6 @@ void EvilFXEditor::drawLogo (juce::Graphics& g, juce::Rectangle<float> area)
     g.drawText ("v" EVIL_VERSION "  -  open-source fx by xain jaya", juce::Rectangle<float> (tx, area.getCentreY() + 10.0f, 260.0f, 16.0f), juce::Justification::centredLeft);
 }
 
-void EvilFXEditor::drawBadge (juce::Graphics& g, juce::Rectangle<int> r, const juce::String& top, const juce::String& bottom, juce::Colour bg, juce::Colour fg)
-{
-    g.setColour (bg);
-    g.fillRect (r);
-    bevel (g, r, true);
-    g.setColour (fg);
-    g.setFont (mono (10.5f, true));
-    g.drawText (top, r.withHeight (r.getHeight() / 2).translated (0, 2), juce::Justification::centred);
-    g.drawText (bottom, r.withTrimmedTop (r.getHeight() / 2).translated (0, -2), juce::Justification::centred);
-}
-
 //==============================================================================
 void EvilFXEditor::RackArea::paint (juce::Graphics& g)
 {
@@ -900,6 +874,36 @@ void EvilFXEditor::RackArea::paint (juce::Graphics& g)
     g.setColour (col::ink.withAlpha (0.75f));
     g.drawText ("Hit + ADD FX to pick your effects,", r.withTrimmedTop (60.0f).withTrimmedBottom (30.0f), juce::Justification::centred);
     g.drawText ("load a preset, or hit RANDOM.", r.withTrimmedTop (86.0f).withTrimmedBottom (8.0f), juce::Justification::centred);
+}
+
+void EvilFXEditor::SiteLink::paintButton (juce::Graphics& g, bool hover, bool down)
+{
+    auto r = getLocalBounds().toFloat().reduced (2.0f);
+    const float corner = r.getHeight() * 0.5f;
+    g.setGradientFill (juce::ColourGradient (down ? col::red : juce::Colour (0xffff6a5a), 0, r.getY(),
+                                             hover ? col::red : juce::Colour (0xffb00c18), 0, r.getBottom(), false));
+    g.fillRoundedRectangle (r, corner);
+    g.setColour (juce::Colours::white.withAlpha (hover ? 0.5f : 0.38f));
+    g.fillRoundedRectangle (r.withHeight (r.getHeight() * 0.45f).reduced (corner * 0.6f, 1.5f), corner * 0.4f);
+    g.setColour (col::redDeep);
+    g.drawRoundedRectangle (r, corner, 1.2f);
+
+    // little globe
+    const juce::Point<float> c (r.getX() + corner + 4.0f, r.getCentreY());
+    const float gr = r.getHeight() * 0.3f;
+    g.setColour (juce::Colours::white);
+    g.drawEllipse (c.x - gr, c.y - gr, gr * 2, gr * 2, 2.0f);
+    g.drawEllipse (c.x - gr * 0.45f, c.y - gr, gr * 0.9f, gr * 2, 1.4f);
+    g.drawLine (c.x - gr, c.y, c.x + gr, c.y, 1.4f);
+
+    g.setFont (sans (22.0f, true));
+    auto textArea = r.withTrimmedLeft (corner * 2.0f + 6.0f).withTrimmedRight (corner * 0.6f);
+    g.drawText ("xainjaya.com", textArea, juce::Justification::centred);
+    if (hover)
+    {
+        const float tw = juce::GlyphArrangement::getStringWidth (sans (22.0f, true), "xainjaya.com");
+        g.fillRect (textArea.getCentreX() - tw * 0.5f, textArea.getCentreY() + 12.0f, tw, 1.5f);
+    }
 }
 
 void EvilFXEditor::MoreHint::paintButton (juce::Graphics& g, bool hover, bool down)
