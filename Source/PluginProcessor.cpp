@@ -18,10 +18,12 @@ EvilFXProcessor::EvilFXProcessor()
     add (std::make_unique<TransientShaper> (apvts), "trans_on");
     add (std::make_unique<CrimsonFilter>  (apvts), "filter_on");
     add (std::make_unique<AutoWah>        (apvts), "wah_on");
+    add (std::make_unique<TalkBox>        (apvts), "talk_on");
     add (std::make_unique<GlassEQ>        (apvts), "eq_on");
     add (std::make_unique<ScorchDrive>    (apvts), "gloss_on");
     add (std::make_unique<Nightcore>      (apvts), "pitch_on");
     add (std::make_unique<Ringtone>       (apvts), "ring_on");
+    add (std::make_unique<FreqShifter>    (apvts), "fshift_on");
     add (std::make_unique<TTSRobot>       (apvts), "tts_on");
     add (std::make_unique<CodecSim>       (apvts), "codec_on");
     add (std::make_unique<BitCrush>       (apvts), "crush_on");
@@ -38,9 +40,11 @@ EvilFXProcessor::EvilFXProcessor()
     add (std::make_unique<xfx::Pump>      (apvts, transport), "pump_on");
     add (std::make_unique<VolumeSwell>    (apvts), "swell_on");
     add (std::make_unique<AngelChorus>    (apvts), "chorus_on");
+    add (std::make_unique<xfx::Flanger>   (apvts), "flange_on");
     add (std::make_unique<BoilingPhaser>  (apvts), "phaser_on");
     add (std::make_unique<TremPan>        (apvts), "trem_on");
     add (std::make_unique<StereoSpread>   (apvts), "spread_on");
+    add (std::make_unique<ReverseDelay>   (apvts, transport), "rdelay_on");
     add (std::make_unique<HaloDelay>      (apvts), "delay_on");
     add (std::make_unique<xfx::Blur>      (apvts), "blur_on");
     add (std::make_unique<CathedralVerb>  (apvts), "verb_on");
@@ -277,6 +281,7 @@ void EvilFXProcessor::setStateInformation (const void* data, int size)
         {
             apvts.replaceState (juce::ValueTree::fromXml (*xml));
             if (! Rack::isValid (apvts.state)) Rack::syncFromParams (apvts);
+            else Rack::upgrade (apvts.state);
         }
     updateLatency();
 }

@@ -43,6 +43,16 @@ namespace Presets
                 { "comp_on", 1 }, { "comp_squash", 0.3f }, { "comp_ratio", 2.5f }, { "comp_speed", 0.6f },
                 { "eq_on", 1 }, { "eq_low", 1.5f }, { "eq_high", 2 } } },
 
+            { "Studio Tools", "Jet Flanger Drums", {
+                { "trans_on", 1 }, { "trans_attack", 0.5f },
+                { "flange_on", 1 }, { "flange_rate", 0.15f }, { "flange_depth", 0.8f }, { "flange_fb", 0.7f }, { "flange_mix", 0.5f },
+                { "comp_on", 1 }, { "comp_squash", 0.35f }, { "comp_ratio", 4 }, { "comp_speed", 0.4f } } },
+            { "Studio Tools", "Vocal Thickener", {
+                { "fshift_on", 1 }, { "fshift_hz", 6 }, { "fshift_spread", 1.0f }, { "fshift_mix", 0.3f },
+                { "spread_on", 1 }, { "spread_width", 0.3f }, { "spread_motion", 0.1f },
+                { "comp_on", 1 }, { "comp_squash", 0.4f }, { "comp_ratio", 3 }, { "comp_speed", 0.4f },
+                { "eq_on", 1 }, { "eq_low", -2 }, { "eq_high", 2 } } },
+
             //==================================================================== Heavenly
             { "Heavenly", "Crimson Glass Pad", {
                 { "chorus_on", 1 }, { "chorus_rate", 0.4f }, { "chorus_depth", 0.55f }, { "chorus_mix", 0.5f },
@@ -83,6 +93,16 @@ namespace Presets
             { "Heavenly", "Glory Glue", {
                 { "comp_on", 1 }, { "comp_squash", 0.45f }, { "comp_ratio", 4 }, { "comp_speed", 0.35f },
                 { "gloss_on", 1 }, { "gloss_drive", 4 }, { "gloss_tone", 0.15f }, { "gloss_mix", 0.6f } } },
+
+            { "Heavenly", "Reverse Halo", {
+                { "rdelay_on", 1 }, { "rdelay_sync", 8 }, { "rdelay_fb", 0.45f }, { "rdelay_mix", 0.45f },
+                { "chorus_on", 1 }, { "chorus_rate", 0.3f }, { "chorus_depth", 0.4f }, { "chorus_mix", 0.3f },
+                { "verb_on", 1 }, { "verb_size", 0.9f }, { "verb_damp", 0.25f }, { "verb_mix", 0.4f },
+                { "width", 1.3f } } },
+            { "Heavenly", "Angel Spiral", {
+                { "fshift_on", 1 }, { "fshift_hz", 2.5f }, { "fshift_fb", 0.5f }, { "fshift_spread", 1.0f }, { "fshift_mix", 0.5f },
+                { "delay_on", 1 }, { "delay_sync", 7 }, { "delay_fb", 0.5f }, { "delay_tone", 0.7f }, { "delay_mix", 0.3f },
+                { "verb_on", 1 }, { "verb_size", 1.0f }, { "verb_damp", 0.2f }, { "verb_mix", 0.45f } } },
 
             //==================================================================== Ambient Pads
             { "Ambient Pads", "Giant Ambient Pad", {
@@ -138,6 +158,21 @@ namespace Presets
             { "Ambient Pads", "Nightcore Halo", {
                 { "pitch_on", 1 }, { "pitch_semi", 12 }, { "pitch_window", 0.8f }, { "pitch_mix", 0.3f },
                 { "blur_on", 1 }, { "blur_size", 0.85f }, { "blur_smear", 0.85f }, { "blur_shimmer", 0.5f }, { "blur_mix", 0.6f } } },
+
+            { "Ambient Pads", "Backwards Dream", {
+                { "swell_on", 1 }, { "swell_attack", 800 }, { "swell_sens", 0.55f },
+                { "rdelay_on", 1 }, { "rdelay_sync", 9 }, { "rdelay_fb", 0.5f }, { "rdelay_mix", 0.5f },
+                { "blur_on", 1 }, { "blur_size", 0.8f }, { "blur_smear", 0.75f }, { "blur_mix", 0.45f },
+                { "verb_on", 1 }, { "verb_size", 0.9f }, { "verb_mix", 0.35f } } },
+            { "Ambient Pads", "Talking Clouds", {
+                { "talk_on", 1 }, { "talk_vowel", 0.3f }, { "talk_rate", 0.15f }, { "talk_sweep", 0.8f }, { "talk_mix", 0.6f }, { "talk_voice", 2 },
+                { "blur_on", 1 }, { "blur_size", 0.85f }, { "blur_smear", 0.8f }, { "blur_shimmer", 0.25f }, { "blur_mix", 0.55f },
+                { "verb_on", 1 }, { "verb_size", 0.95f }, { "verb_mix", 0.4f } } },
+            { "Ambient Pads", "Jet Stream Pad", {
+                { "flange_on", 1 }, { "flange_rate", 0.05f }, { "flange_depth", 1.0f }, { "flange_fb", 0.8f }, { "flange_mix", 0.5f },
+                { "blur_on", 1 }, { "blur_size", 0.75f }, { "blur_smear", 0.7f }, { "blur_mix", 0.45f },
+                { "spread_on", 1 }, { "spread_width", 0.6f }, { "spread_motion", 0.4f },
+                { "verb_on", 1 }, { "verb_size", 0.85f }, { "verb_mix", 0.35f } } },
 
             //==================================================================== Internet Era
             { "Internet Era", "Dial-Up 1999", {
@@ -203,6 +238,19 @@ namespace Presets
                 { "codec_on", 1 }, { "codec_rate", 3 }, { "codec_type", 0 }, { "codec_alias", 0.7f },
                 { "spk_on", 1 }, { "spk_model", 2 }, { "spk_drive", 0.35f } } },
 
+            { "Internet Era", "Smiley Says Hi", {
+                { "talk_on", 1 }, { "talk_vowel", 0.2f }, { "talk_rate", 3 }, { "talk_sweep", 0.7f }, { "talk_mix", 0.8f }, { "talk_voice", 2 },
+                { "pitch_on", 1 }, { "pitch_semi", 5 }, { "pitch_window", 0.4f }, { "pitch_mix", 0.6f },
+                { "chorus_on", 1 }, { "chorus_rate", 0.8f }, { "chorus_depth", 0.3f }, { "chorus_mix", 0.3f } } },
+            { "Internet Era", "Haunted Webcam", {
+                { "fshift_on", 1 }, { "fshift_hz", -40 }, { "fshift_fb", 0.3f }, { "fshift_mix", 0.55f },
+                { "dial_on", 1 }, { "dial_band", 0.45f }, { "dial_noise", 0.25f }, { "dial_crackle", 0.2f },
+                { "pkt_on", 1 }, { "pkt_loss", 0.15f }, { "pkt_conceal", 0 } } },
+            { "Internet Era", "Talk Box Modem", {
+                { "talk_on", 1 }, { "talk_vowel", 0.5f }, { "talk_rate", 6 }, { "talk_sweep", 1.0f }, { "talk_voice", 1 },
+                { "dial_on", 1 }, { "dial_band", 0.35f }, { "dial_noise", 0.3f }, { "dial_crackle", 0.3f }, { "dial_modem", 1 },
+                { "crush_on", 1 }, { "crush_bits", 10 }, { "crush_rate", 3 }, { "crush_mix", 0.5f } } },
+
             //==================================================================== Rhythm & Glitch (BPM synced)
             { "Rhythm & Glitch", "Beat Repeat", {
                 { "glitch_on", 1 }, { "glitch_div", 3 }, { "glitch_style", 1 }, { "glitch_chance", 0.35f } } },
@@ -237,6 +285,20 @@ namespace Presets
                 { "crush_on", 1 }, { "crush_bits", 5 }, { "crush_rate", 6 },
                 { "delay_on", 1 }, { "delay_sync", 3 }, { "delay_fb", 0.45f }, { "delay_tone", 0.5f }, { "delay_mix", 0.28f },
                 { "verb_on", 1 }, { "verb_size", 0.4f }, { "verb_mix", 0.15f } } },
+
+            { "Rhythm & Glitch", "Reverse Riser", {
+                { "rdelay_on", 1 }, { "rdelay_sync", 6 }, { "rdelay_fb", 0.6f }, { "rdelay_mix", 0.6f },
+                { "gate_on", 1 }, { "gate_pattern", 3 }, { "gate_div", 3 }, { "gate_depth", 0.6f }, { "gate_smooth", 0.3f },
+                { "pump_on", 1 }, { "pump_div", 1 }, { "pump_depth", 0.5f } } },
+            { "Rhythm & Glitch", "Talk Box Funk", {
+                { "trans_on", 1 }, { "trans_attack", 0.5f },
+                { "talk_on", 1 }, { "talk_vowel", 0.1f }, { "talk_rate", 4 }, { "talk_sweep", 0.9f }, { "talk_voice", 0 },
+                { "gloss_on", 1 }, { "gloss_drive", 8 }, { "gloss_mix", 0.6f },
+                { "pump_on", 1 }, { "pump_div", 2 }, { "pump_depth", 0.45f } } },
+            { "Rhythm & Glitch", "Flanged Pump", {
+                { "flange_on", 1 }, { "flange_rate", 0.5f }, { "flange_depth", 0.7f }, { "flange_fb", 0.8f }, { "flange_mix", 0.6f },
+                { "pump_on", 1 }, { "pump_div", 2 }, { "pump_depth", 0.7f }, { "pump_shape", 0.5f },
+                { "comp_on", 1 }, { "comp_squash", 0.3f }, { "comp_ratio", 3 } } },
 
             //==================================================================== Lo-Fi & Speakers
             { "Lo-Fi & Speakers", "Lo-Fi Study Stream", {
@@ -285,6 +347,16 @@ namespace Presets
                 { "dial_on", 1 }, { "dial_band", 0.9f }, { "dial_noise", 0.35f }, { "dial_crackle", 0.15f }, { "dial_mix", 0.35f },
                 { "verb_on", 1 }, { "verb_size", 0.75f }, { "verb_damp", 0.6f }, { "verb_mix", 0.3f } } },
 
+            { "Lo-Fi & Speakers", "Flanged Cassette", {
+                { "flange_on", 1 }, { "flange_rate", 0.08f }, { "flange_depth", 0.4f }, { "flange_fb", 0.3f }, { "flange_mix", 0.4f },
+                { "jit_on", 1 }, { "jit_wow", 0.35f }, { "jit_flutter", 0.25f }, { "jit_drift", 0.2f },
+                { "vinyl_on", 1 }, { "vinyl_crackle", 0.2f }, { "vinyl_wear", 0.45f }, { "vinyl_wow", 0.1f },
+                { "eq_on", 1 }, { "eq_high", -3 } } },
+            { "Lo-Fi & Speakers", "Boombox Talk Box", {
+                { "talk_on", 1 }, { "talk_vowel", 0.35f }, { "talk_rate", 2 }, { "talk_sweep", 0.6f }, { "talk_mix", 0.75f },
+                { "spk_on", 1 }, { "spk_model", 5 }, { "spk_drive", 0.4f },
+                { "verb_on", 1 }, { "verb_size", 0.3f }, { "verb_mix", 0.12f } } },
+
             //==================================================================== Chaos
             { "Chaos", "Total Server Meltdown", {
                 { "crush_on", 1 }, { "crush_bits", 3 }, { "crush_rate", 18 }, { "crush_mix", 0.7f },
@@ -305,6 +377,22 @@ namespace Presets
                 { "glitch_on", 1 }, { "glitch_div", 5 }, { "glitch_style", 2 }, { "glitch_chance", 0.5f },
                 { "codec_on", 1 }, { "codec_rate", 4 }, { "codec_type", 1 }, { "codec_alias", 1.0f },
                 { "out_gain", -6 } } },
+            { "Chaos", "Alien Transmission", {
+                { "fshift_on", 1 }, { "fshift_hz", 700 }, { "fshift_fb", 0.6f }, { "fshift_spread", 0.7f }, { "fshift_mix", 0.8f },
+                { "ring_on", 1 }, { "ring_freq", 60 }, { "ring_mix", 0.4f },
+                { "pkt_on", 1 }, { "pkt_loss", 0.3f }, { "pkt_conceal", 0 },
+                { "out_gain", -3 } } },
+            { "Chaos", "Haunted Server", {
+                { "fshift_on", 1 }, { "fshift_hz", -150 }, { "fshift_fb", 0.4f }, { "fshift_mix", 0.6f },
+                { "corrupt_on", 1 }, { "corrupt_amount", 0.4f }, { "corrupt_bits", 0.5f }, { "corrupt_reverse", 0.4f },
+                { "rdelay_on", 1 }, { "rdelay_sync", 4 }, { "rdelay_fb", 0.7f }, { "rdelay_mix", 0.6f } } },
+            { "Chaos", "Smiley Meltdown", {
+                { "talk_on", 1 }, { "talk_rate", 9 }, { "talk_sweep", 1.0f }, { "talk_voice", 2 },
+                { "fshift_on", 1 }, { "fshift_hz", 300 }, { "fshift_spread", 1.0f }, { "fshift_mix", 0.5f },
+                { "flange_on", 1 }, { "flange_rate", 2.5f }, { "flange_fb", -0.9f }, { "flange_mix", 0.7f },
+                { "glitch_on", 1 }, { "glitch_div", 4 }, { "glitch_style", 0 }, { "glitch_chance", 0.4f },
+                { "rdelay_on", 1 }, { "rdelay_sync", 3 }, { "rdelay_fb", 0.5f }, { "rdelay_mix", 0.4f },
+                { "out_gain", -1 } } },
         };
         return p;
     }
@@ -398,6 +486,7 @@ namespace Presets
         state.replaceState (juce::ValueTree::fromXml (*xml));
         state.state.setProperty ("presetName", file.getFileNameWithoutExtension(), nullptr);
         if (! Rack::isValid (state.state)) Rack::syncFromParams (state);
+        else Rack::upgrade (state.state);
         return true;
     }
 }

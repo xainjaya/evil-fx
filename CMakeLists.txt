@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(EvilFX VERSION 1.0.0 LANGUAGES C CXX)
+project(EvilFX VERSION 1.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -41,6 +41,7 @@ juce_add_plugin(EvilFX
     COMPANY_WEBSITE           "https://xainjaya.com"
     BUNDLE_ID                 com.xainjaya.evilfx
     PRODUCT_NAME              "Evil FX"
+    ICON_BIG                  "${CMAKE_CURRENT_SOURCE_DIR}/docs/icon.png"
     PLUGIN_MANUFACTURER_CODE  Xain
     PLUGIN_CODE               EvFx
     FORMATS                   ${EVIL_FORMATS}

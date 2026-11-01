@@ -77,6 +77,96 @@ inline void drawOrb (juce::Graphics& g, juce::Point<float> c, float r, juce::Col
     g.drawEllipse (c.x - r - 0.5f, c.y - r - 0.5f, r * 2.0f + 1.0f, r * 2.0f + 1.0f, 0.8f);
 }
 
+// The Evil FX mascot: glossy blue smiley wearing a sideways orange cap with a
+// purple/black checker patch. `c` is the centre of the head, `r` its radius;
+// the cap reaches ~1.35r above the centre and the brim ~1.55r to the right.
+inline void drawSmiley (juce::Graphics& g, juce::Point<float> c, float r)
+{
+    auto P = [c, r] (float x, float y) { return juce::Point<float> (c.x + x * r, c.y + y * r); };
+
+    // soft blue glow behind everything
+    g.setGradientFill (juce::ColourGradient (juce::Colour (0xff6f8dff).withAlpha (0.38f), c.x, c.y - r * 0.2f,
+                                             juce::Colour (0xff6f8dff).withAlpha (0.0f), c.x + r * 1.7f, c.y, true));
+    g.fillEllipse (c.x - r * 1.7f, c.y - r * 1.9f, r * 3.4f, r * 3.4f);
+
+    // head
+    drawOrb (g, c, r, juce::Colour (0xffdce8ff), juce::Colour (0xff86a4ff), juce::Colour (0xff3d4fd6));
+
+    // face — sits under the cap
+    const auto ink = juce::Colour (0xff12142e);
+    for (float ex : { -0.37f, 0.37f })
+    {
+        const auto e = P (ex, -0.05f);
+        g.setColour (ink);
+        g.fillEllipse (e.x - r * 0.12f, e.y - r * 0.2f, r * 0.24f, r * 0.4f);
+        g.setColour (juce::Colours::white.withAlpha (0.6f));
+        g.fillEllipse (e.x + r * 0.01f, e.y - r * 0.14f, r * 0.07f, r * 0.12f);
+    }
+    juce::Path smile;
+    smile.startNewSubPath (P (-0.68f, 0.12f));
+    smile.cubicTo (P (-0.42f, 0.66f), P (0.42f, 0.68f), P (0.66f, 0.1f));
+    g.setColour (ink);
+    g.strokePath (smile, juce::PathStrokeType (r * 0.12f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+
+    // brim — sticks out sideways to the right, drawn first so the crown overlaps it
+    juce::Path brim;
+    brim.startNewSubPath (P (0.38f, -0.68f));
+    brim.quadraticTo (P (1.2f, -0.7f), P (1.62f, -0.26f));
+    brim.lineTo (P (1.6f, 0.0f));
+    brim.quadraticTo (P (1.05f, -0.26f), P (0.5f, -0.28f));
+    brim.closeSubPath();
+    g.setColour (juce::Colours::black.withAlpha (0.18f));
+    g.fillPath (brim, juce::AffineTransform::translation (0.0f, r * 0.06f));
+    g.setGradientFill (juce::ColourGradient (juce::Colour (0xffff9a2e), c.x + r * 0.6f, c.y - r * 0.6f,
+                                             juce::Colour (0xffc2470f), c.x + r * 1.3f, c.y - r * 0.05f, false));
+    g.fillPath (brim);
+    g.setColour (juce::Colour (0xff9a3408).withAlpha (0.7f));
+    g.strokePath (brim, juce::PathStrokeType (juce::jmax (0.8f, r * 0.03f)));
+
+    // crown — a dome over the top of the head, rim lower on the left (it's on sideways)
+    juce::Path crown;
+    crown.startNewSubPath (P (-1.03f, -0.28f));
+    crown.cubicTo (P (-1.08f, -1.02f), P (-0.5f, -1.38f), P (0.06f, -1.36f));
+    crown.cubicTo (P (0.62f, -1.34f), P (1.08f, -0.98f), P (1.02f, -0.42f));
+    crown.quadraticTo (P (0.0f, -0.36f), P (-1.03f, -0.28f));
+    crown.closeSubPath();
+    g.setGradientFill (juce::ColourGradient (juce::Colour (0xffffe066), c.x + r * 0.5f, c.y - r * 1.25f,
+                                             juce::Colour (0xffff8c1a), c.x - r * 0.95f, c.y - r * 0.35f, true));
+    g.fillPath (crown);
+    // gloss on the crown
+    juce::Path shine;
+    shine.addEllipse (c.x - r * 0.55f, c.y - r * 1.3f, r * 1.25f, r * 0.42f);
+    g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.55f), c.x, c.y - r * 1.3f,
+                                             juce::Colours::white.withAlpha (0.0f), c.x, c.y - r * 0.88f, false));
+    g.fillPath (shine);
+    // shadow the cap throws onto the forehead
+    juce::Path rimShadow;
+    rimShadow.startNewSubPath (P (-0.98f, -0.28f));
+    rimShadow.quadraticTo (P (0.0f, -0.36f), P (1.0f, -0.42f));
+    g.setColour (juce::Colour (0xff1c2a8a).withAlpha (0.35f));
+    g.strokePath (rimShadow, juce::PathStrokeType (r * 0.1f), juce::AffineTransform::translation (0.0f, r * 0.06f));
+    g.setColour (juce::Colour (0xffb8560c).withAlpha (0.8f));
+    g.strokePath (crown, juce::PathStrokeType (juce::jmax (0.8f, r * 0.035f)));
+
+    // purple / black checkerboard patch on the front of the cap, tilted with the cap
+    {
+        juce::Graphics::ScopedSaveState s (g);
+        const auto pc = P (-0.08f, -0.94f);
+        g.addTransform (juce::AffineTransform::rotation (0.07f, pc.x, pc.y));
+        const int rows = 3, cols = 8;
+        const float pw = r * 0.92f, ph = r * 0.34f, cw = pw / cols, ch = ph / rows;
+        const float x0 = pc.x - pw * 0.5f, y0 = pc.y - ph * 0.5f;
+        g.setColour (juce::Colours::black);
+        g.fillRect (x0, y0, pw, ph);
+        g.setColour (juce::Colour (0xffe21cf0));
+        for (int y = 0; y < rows; ++y)
+            for (int x = 0; x < cols; ++x)
+                if (((x + y) & 1) == 0) g.fillRect (x0 + x * cw, y0 + y * ch, cw + 0.05f, ch + 0.05f);
+        g.setColour (juce::Colours::black.withAlpha (0.6f));
+        g.drawRect (x0, y0, pw, ph, juce::jmax (0.6f, r * 0.02f));
+    }
+}
+
 class LookAndFeel : public juce::LookAndFeel_V4
 {
 public:

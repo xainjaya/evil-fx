@@ -12,7 +12,7 @@ namespace
     constexpr int headerH = 96, toolbarH = 34, statusH = 26, margin = 14, gap = 10, stripH = 150, cols = 5, footerH = 30;
     const char* kMarquee =
         "  *** Welcome to Evil FX v" EVIL_VERSION " ***  hit + ADD FX to build your chain  ~  "
-        "Beat Repeat, Trance Gate and Sidechain Pump lock to your project tempo  ~  try Blur + Freeze for giant pads  ~  hit SAVE to keep your own presets  ~  "
+        "Beat Repeat, Trance Gate and Sidechain Pump lock to your project tempo  ~  try Blur + Freeze for giant pads  ~  NEW: Talk Box, Freq Shifter, Flanger and Reverse Delay  ~  hit SAVE to keep your own presets  ~  "
         "hit RANDOM for happy accidents  ~  pick a THEME you like  ~  double-click any knob to reset it  ~  "
         "the safety limiter keeps your speakers alive  ~  free & open source forever  ~  sign the guestbook @ xainjaya.com  ";
 
@@ -26,6 +26,9 @@ namespace
               { "filter_mode" }, {} },
             { 0, "Auto-Wah", "envelope", false, "wah_on",
               { { "wah_sens", "Sens" }, { "wah_range", "Range" }, { "wah_reso", "Reso" }, { "wah_mix", "Mix" } }, {}, {} },
+            { 0, "Talk Box", "vowels", false, "talk_on",
+              { { "talk_vowel", "Vowel" }, { "talk_rate", "Rate" }, { "talk_sweep", "Sweep" }, { "talk_mix", "Mix" } },
+              { "talk_voice" }, {} },
             { 0, "EQ", "3-band", false, "eq_on",
               { { "eq_low", "Low" }, { "eq_mid", "Mid" }, { "eq_midfreq", "Mid Freq" }, { "eq_high", "High" } }, {}, {} },
             { 0, "Saturation", "drive", false, "gloss_on",
@@ -34,6 +37,8 @@ namespace
               { { "pitch_semi", "Pitch" }, { "pitch_window", "Grain" }, { "pitch_mix", "Mix" } }, {}, {} },
             { 0, "Ring Modulator", "", true, "ring_on",
               { { "ring_freq", "Freq" }, { "ring_shape", "Shape" }, { "ring_warble", "Arp" }, { "ring_mix", "Mix" } }, {}, {} },
+            { 0, "Freq Shifter", "alien", false, "fshift_on",
+              { { "fshift_hz", "Shift" }, { "fshift_fb", "Feedback" }, { "fshift_spread", "Spread" }, { "fshift_mix", "Mix" } }, {}, {} },
             { 0, "Robot Voice", "", true, "tts_on",
               { { "tts_pitch", "Pitch" }, { "tts_metal", "Metal" }, { "tts_buzz", "Buzz" }, { "tts_mix", "Mix" } }, {}, {} },
             { 0, "Lo-Fi Codec", "", true, "codec_on",
@@ -67,12 +72,16 @@ namespace
               { { "swell_attack", "Attack" }, { "swell_sens", "Sens" }, { "swell_mix", "Mix" } }, {}, {} },
             { 0, "Chorus", "thicken", false, "chorus_on",
               { { "chorus_rate", "Rate" }, { "chorus_depth", "Depth" }, { "chorus_fb", "Feedback" }, { "chorus_mix", "Mix" } }, {}, {} },
+            { 0, "Flanger", "jet", false, "flange_on",
+              { { "flange_rate", "Rate" }, { "flange_depth", "Depth" }, { "flange_fb", "Feedback" }, { "flange_mix", "Mix" } }, {}, {} },
             { 0, "Phaser", "swirl", false, "phaser_on",
               { { "phaser_rate", "Rate" }, { "phaser_depth", "Depth" }, { "phaser_fb", "Feedback" }, { "phaser_mix", "Mix" } }, {}, {} },
             { 0, "Tremolo / Pan", "motion", false, "trem_on",
               { { "trem_rate", "Rate" }, { "trem_depth", "Depth" }, { "trem_shape", "Shape" }, { "trem_pan", "Pan" } }, {}, {} },
             { 0, "Stereo Widener", "wide", false, "spread_on",
               { { "spread_width", "Width" }, { "spread_motion", "Motion" }, { "spread_mix", "Mix" } }, {}, {} },
+            { 0, "Reverse Delay", "backwards", false, "rdelay_on",
+              { { "rdelay_time", "Time" }, { "rdelay_fb", "Feedback" }, { "rdelay_mix", "Mix" } }, { "rdelay_sync" }, {} },
             { 0, "Delay", "echo", false, "delay_on",
               { { "delay_time", "Time" }, { "delay_fb", "Feedback" }, { "delay_tone", "Tone" }, { "delay_mix", "Mix" } },
               { "delay_sync" }, { { "delay_pp", "Ping-pong" } } },
@@ -101,8 +110,10 @@ namespace
             { "trans_on", "Tone & Dynamics" }, { "filter_on", "Tone & Dynamics" }, { "wah_on", "Tone & Dynamics" }, { "eq_on", "Tone & Dynamics" },
             { "gloss_on", "Tone & Dynamics" }, { "comp_on", "Tone & Dynamics" },
             { "pitch_on", "Pitch & Voice" }, { "ring_on", "Pitch & Voice" }, { "tts_on", "Pitch & Voice" },
+            { "talk_on", "Pitch & Voice" }, { "fshift_on", "Pitch & Voice" },
             { "glitch_on", "Rhythm (BPM synced)" }, { "gate_on", "Rhythm (BPM synced)" }, { "pump_on", "Rhythm (BPM synced)" },
             { "swell_on", "Ambient & Space" }, { "blur_on", "Ambient & Space" }, { "delay_on", "Ambient & Space" }, { "verb_on", "Ambient & Space" },
+            { "rdelay_on", "Ambient & Space" }, { "flange_on", "Modulation & Stereo" },
             { "chorus_on", "Modulation & Stereo" }, { "phaser_on", "Modulation & Stereo" }, { "trem_on", "Modulation & Stereo" },
             { "spread_on", "Modulation & Stereo" } };
         auto it = cat.find (onId);
@@ -111,7 +122,7 @@ namespace
 
     bool isBpmModule (const juce::String& onId)
     {
-        return onId == "glitch_on" || onId == "gate_on" || onId == "pump_on" || onId == "delay_on";
+        return onId == "glitch_on" || onId == "gate_on" || onId == "pump_on" || onId == "delay_on" || onId == "rdelay_on";
     }
 
     //==========================================================================
@@ -675,7 +686,7 @@ void EvilFXEditor::showHelp()
         "+ ADD FX: pick effects for your rack. Ticked ones are already in it; picking one jumps to its card.\n"
         "X on a card removes it, the power button bypasses it without removing it.\n"
         "Signal flows left to right, top to bottom, in the numbered order.\n\n"
-        "Beat Repeat, Trance Gate, Sidechain Pump and Delay sync to your project tempo.\nFor huge ambient pads try Blur (Freeze holds the sound forever) with Volume Swell.\n\n"
+        "Beat Repeat, Trance Gate, Sidechain Pump, Delay and Reverse Delay sync to your project tempo.\nFor huge ambient pads try Blur (Freeze holds the sound forever) with Volume Swell.\n\n"
         "Presets: pick one up top, SAVE your own (Documents/Evil FX/Presets), or hit RANDOM.\n"
         "Knobs: drag up/down, double-click to reset, click the value to type one in.\n"
         "The Limiter on Master keeps the output safe; leave it on unless you know why.\n\n"
@@ -716,14 +727,19 @@ void EvilFXEditor::timerCallback()
     marqueeX -= viz.isOn() ? 1.3f : 2.6f;
     desktop.repaint (marqueeArea);
 
-    // the delay Time knob does nothing while tempo-synced, so fade it
-    if (auto* t = cards[EvilFXProcessor::Delay]->getSlider ("delay_time"))
+    // the delay Time knobs do nothing while tempo-synced, so fade them
+    auto fadeSynced = [this] (int module, const char* timeId, const char* syncId, const char* onId)
     {
-        const bool synced = proc.apvts.getRawParameterValue ("delay_sync")->load() > 0.5f;
-        const bool on = proc.apvts.getRawParameterValue ("delay_on")->load() > 0.5f;
-        const float a = (synced ? 0.3f : 1.0f) * (on ? 1.0f : 0.42f);
-        if (std::abs (t->getAlpha() - a) > 0.01f) { t->setAlpha (a); cards[EvilFXProcessor::Delay]->repaint(); }
-    }
+        if (auto* t = cards[module]->getSlider (timeId))
+        {
+            const bool synced = proc.apvts.getRawParameterValue (syncId)->load() > 0.5f;
+            const bool on = proc.apvts.getRawParameterValue (onId)->load() > 0.5f;
+            const float a = (synced ? 0.3f : 1.0f) * (on ? 1.0f : 0.42f);
+            if (std::abs (t->getAlpha() - a) > 0.01f) { t->setAlpha (a); cards[module]->repaint(); }
+        }
+    };
+    fadeSynced (EvilFXProcessor::Delay, "delay_time", "delay_sync", "delay_on");
+    fadeSynced (EvilFXProcessor::RevDelay, "rdelay_time", "rdelay_sync", "rdelay_on");
 }
 
 //==============================================================================
@@ -811,30 +827,10 @@ void EvilFXEditor::Desktop::paint (juce::Graphics& g)
 
 void EvilFXEditor::drawLogo (juce::Graphics& g, juce::Rectangle<float> area)
 {
-    const juce::Point<float> c (area.getX() + 40.0f, area.getCentreY() + 5.0f);
-    const float r = 25.0f;
+    const float r = 27.0f;
+    drawSmiley (g, { area.getX() + 40.0f, area.getCentreY() + 9.0f }, r);
 
-    g.setColour (col::ember.withAlpha (0.3f));
-    g.fillEllipse (c.x - r - 4, c.y - r - 4, (r + 4) * 2, (r + 4) * 2);
-    drawOrb (g, c, r, col::redPale, juce::Colour (0xffff3644), col::redDeep);
-
-    g.setColour (col::ink);   // friendly face
-    g.fillEllipse (c.x - 10.0f, c.y - 7.0f, 6.0f, 8.0f);
-    g.fillEllipse (c.x + 4.0f, c.y - 7.0f, 6.0f, 8.0f);
-    juce::Path smile;
-    smile.addCentredArc (c.x, c.y + 1.0f, 12.0f, 10.0f, 0.0f, 2.1f, 4.18f, true);
-    g.strokePath (smile, juce::PathStrokeType (2.8f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-    juce::ColourGradient spec (juce::Colours::white.withAlpha (0.5f), c.x, c.y - r * 0.92f, juce::Colours::white.withAlpha (0.0f), c.x, c.y - r * 0.1f, false);
-    g.setGradientFill (spec);
-    g.fillEllipse (c.x - r * 0.64f, c.y - r * 0.9f, r * 1.28f, r * 0.8f);
-
-    const auto halo = juce::Rectangle<float> (c.x - 20.0f, c.y - r - 14.0f, 40.0f, 10.0f);   // golden halo
-    g.setColour (juce::Colour (0xffffe08a).withAlpha (0.4f));
-    g.drawEllipse (halo.expanded (1.5f), 5.0f);
-    g.setGradientFill (juce::ColourGradient (juce::Colour (0xfffff6c0), halo.getX(), halo.getY(), juce::Colour (0xffd49a1a), halo.getRight(), halo.getBottom(), false));
-    g.drawEllipse (halo, 2.6f);
-
-    const float tx = c.x + r + 16.0f;
+    const float tx = area.getX() + 40.0f + r * 1.62f + 10.0f;   // clear of the cap brim
     juce::GlyphArrangement ga;
     ga.addLineOfText (sans (40.0f, true), "EVIL", tx, area.getCentreY() + 4.0f);
     juce::Path evil; ga.createPath (evil);

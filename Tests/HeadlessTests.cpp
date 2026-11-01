@@ -3,7 +3,8 @@
 //   2. Every module alone, at defaults and at both extremes, stays finite and under the ceiling
 //   3. Random fuzzing of every parameter, including toggling modules mid-stream
 //   4. Every factory preset
-//   5. Optional: renders the editor to a PNG  (EvilFXTests --snapshot out.png)
+//   5. Freq Shifter / Reverse Delay behave as advertised
+//   6. Optional: renders the editor to a PNG  (EvilFXTests --snapshot out.png)
 
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "PluginProcessor.h"
@@ -118,7 +119,8 @@ void testEachModule()
         { "lag", "lag_" }, { "jitter", "jit_" }, { "speaker", "spk_" }, { "pitch", "pitch_" }, { "ring", "ring_" },
         { "glitch", "glitch_" }, { "gate", "gate_" }, { "comp", "comp_" }, { "eq", "eq_" }, { "vinyl", "vinyl_" },
         { "tts", "tts_" }, { "pump", "pump_" }, { "spread", "spread_" }, { "trans", "trans_" }, { "wah", "wah_" },
-        { "swell", "swell_" }, { "blur", "blur_" }, { "chorus", "chorus_" }, { "phaser", "phaser_" }, { "trem", "trem_" }, { "delay", "delay_" }, { "verb", "verb_" } };
+        { "swell", "swell_" }, { "blur", "blur_" }, { "chorus", "chorus_" }, { "phaser", "phaser_" }, { "trem", "trem_" }, { "delay", "delay_" }, { "verb", "verb_" },
+        { "talk", "talk_" }, { "fshift", "fshift_" }, { "flange", "flange_" }, { "rdelay", "rdelay_" } };
 
     for (auto& [name, prefix] : modules)
     {
@@ -202,6 +204,89 @@ void testPresets()
     juce::MemoryBlock mb; p.getStateInformation (mb);
     EvilFXProcessor q; q.setStateInformation (mb.getData(), (int) mb.getSize());
     check (q.countActiveModules() == p.countActiveModules(), "state save/restore");
+
+    // a v1.0 project (31-effect rack string) keeps the same effects in its rack
+    juce::ValueTree old ("EvilFX");
+    old.setProperty ("rack", "0001000000000000000000000010001", nullptr);   // v1.0: EQ, Delay, Speaker Sim
+    const auto upgraded = Rack::get (old);
+    check (upgraded.length() == Rack::numModules, "legacy rack upgraded to the new length");
+    check (Rack::contains (old, 4) && juce::String (Rack::onId (4)) == "eq_on", "legacy rack keeps EQ");
+    check (Rack::contains (old, 30) && juce::String (Rack::onId (30)) == "delay_on", "legacy rack keeps Delay");
+    check (Rack::contains (old, 34) && juce::String (Rack::onId (34)) == "spk_on", "legacy rack keeps Speaker Sim");
+    check (upgraded.retainCharacters ("1").length() == 3, "legacy rack adds nothing new");
+}
+
+//------------------------------------------------------------------------------
+// The newer effects do what they say: the frequency shifter moves a sine by the set
+// number of Hz (and suppresses the other sideband), the reverse delay plays a
+// rising sweep back falling.
+void testNewEffects()
+{
+    std::cout << "[5] Freq Shifter sideband + Reverse Delay direction" << std::endl;
+    auto goertzel = [] (const std::vector<float>& x, double f)
+    {
+        const double w = juce::MathConstants<double>::twoPi * f / kRate, cw = 2.0 * std::cos (w);
+        double s1 = 0, s2 = 0;
+        for (float v : x) { const double s0 = v + cw * s1 - s2; s2 = s1; s1 = s0; }
+        return std::sqrt (s1 * s1 + s2 * s2 - cw * s1 * s2) / (double) x.size();
+    };
+    auto render = [] (EvilFXProcessor& p, std::function<float (int)> gen, int total)
+    {
+        std::vector<float> out ((size_t) total);
+        juce::AudioBuffer<float> buf (2, kBlock); juce::MidiBuffer midi;
+        for (int start = 0; start < total; start += kBlock)
+        {
+            const int n = juce::jmin (kBlock, total - start);
+            buf.setSize (2, n, false, false, true);
+            for (int i = 0; i < n; ++i) { const float v = gen (start + i); buf.setSample (0, i, v); buf.setSample (1, i, v); }
+            p.processBlock (buf, midi);
+            for (int i = 0; i < n; ++i) out[(size_t) (start + i)] = buf.getSample (0, i);
+        }
+        return out;
+    };
+
+    for (float shift : { 200.0f, -300.0f })
+    {
+        EvilFXProcessor p;
+        p.setPlayConfigDetails (2, 2, kRate, kBlock);
+        p.prepareToPlay (kRate, kBlock);
+        resetAll (p);
+        setParam (p, "fshift_on", 1); setParam (p, "fshift_hz", shift); setParam (p, "fshift_mix", 1); setParam (p, "limiter", 0);
+        auto y = render (p, [] (int i) { return 0.4f * (float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / kRate); }, (int) kRate);
+        y.erase (y.begin(), y.begin() + (int) (kRate * 0.25));
+        const double want = goertzel (y, 1000.0 + shift), mirror = goertzel (y, 1000.0 - shift), orig = goertzel (y, 1000.0);
+        const double rej = 20.0 * std::log10 (want / juce::jmax (1e-12, juce::jmax (mirror, orig)));
+        std::cout << "  shift " << juce::String (shift, 0) << " Hz: wanted vs mirror/original " << juce::String (rej, 1) << " dB\n";
+        check (rej > 30.0, "freq shifter should land on 1000 + shift and reject the rest (> 30 dB)");
+    }
+
+    {   // reverse delay, fully wet, no feedback: feed a rising sweep, the output must fall inside each chunk
+        EvilFXProcessor p;
+        p.setPlayConfigDetails (2, 2, kRate, kBlock);
+        p.prepareToPlay (kRate, kBlock);
+        resetAll (p);
+        setParam (p, "rdelay_on", 1); setParam (p, "rdelay_sync", 0); setParam (p, "rdelay_time", 500);
+        setParam (p, "rdelay_fb", 0); setParam (p, "rdelay_mix", 1); setParam (p, "limiter", 0);
+        double ph = 0;
+        auto y = render (p, [&ph] (int i)
+        {
+            const double t = std::fmod (i / kRate, 0.5);                  // 300 Hz -> 3 kHz every 0.5 s
+            ph += juce::MathConstants<double>::twoPi * (300.0 + 5400.0 * t) / kRate;
+            return 0.4f * (float) std::sin (ph);
+        }, (int) (kRate * 3));
+        // zero-crossing rate over short windows: count windows where it falls vs rises
+        int falling = 0, rising = 0, prev = -1;
+        const int win = (int) (kRate * 0.02);
+        for (int start = (int) kRate; start + win < (int) y.size(); start += win)
+        {
+            int zc = 0;
+            for (int i = start + 1; i < start + win; ++i) zc += (y[(size_t) i - 1] < 0) != (y[(size_t) i] < 0);
+            if (prev >= 0) { if (zc < prev - 1) ++falling; else if (zc > prev + 1) ++rising; }
+            prev = zc;
+        }
+        std::cout << "  reverse delay: pitch falling in " << falling << " windows, rising in " << rising << "\n";
+        check (falling > rising * 2, "reverse delay should play a rising sweep back falling");
+    }
 }
 
 // CPU cost of each module on its own, as % of one core in real time (48 kHz stereo, 512 blocks)
@@ -254,6 +339,8 @@ void snapshot (const juce::File& file, int theme)
     setParam (p, "chorus_on", 1); setParam (p, "comp_on", 1); setParam (p, "pitch_on", 1);
     setParam (p, "vinyl_on", 1); setParam (p, "eq_on", 1); setParam (p, "blur_on", 1); setParam (p, "swell_on", 1);
     setParam (p, "trans_on", 1); setParam (p, "wah_on", 1);
+    setParam (p, "talk_on", 1); setParam (p, "fshift_on", 1); setParam (p, "flange_on", 1); setParam (p, "rdelay_on", 1);
+    setParam (p, "lobit_on", 0); setParam (p, "jit_on", 0);
     p.apvts.state.setProperty ("vizOn", true, nullptr);
     p.apvts.state.setProperty ("theme", theme, nullptr);
     run (p, 1.0);
@@ -264,12 +351,34 @@ void snapshot (const juce::File& file, int theme)
     juce::FileOutputStream os (file);
     juce::PNGImageFormat png;
     check (png.writeImageToStream (img, os), "snapshot written");
-    std::cout << "[5] UI snapshot -> " << file.getFullPathName() << "" << std::endl;
+    std::cout << "[6] UI snapshot -> " << file.getFullPathName() << "" << std::endl;
 }
 } // namespace
 
+// renders the smiley mascot on its own (used for docs/icon.png, the app icon)
+void renderIcon (const juce::File& file, int size)
+{
+    juce::ScopedJuceInitialiser_GUI gui;
+    juce::Image img (juce::Image::ARGB, size, size, true);
+    {
+        juce::Graphics g (img);
+        const float r = (float) size / 3.4f;   // cap + brim span about 3.2r wide, 2.4r tall
+        aero::drawSmiley (g, { (float) size * 0.42f, (float) size * 0.58f }, r);
+    }
+    file.deleteFile();
+    juce::FileOutputStream os (file);
+    juce::PNGImageFormat png;
+    check (png.writeImageToStream (img, os), "icon written");
+    std::cout << "icon -> " << file.getFullPathName() << std::endl;
+}
+
 int main (int argc, char** argv)
 {
+    if (argc > 2 && juce::String (argv[1]) == "--icon")
+    {
+        renderIcon (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]), argc > 3 ? juce::String (argv[3]).getIntValue() : 512);
+        return failures;
+    }
     if (argc > 2 && juce::String (argv[1]) == "--snapshot")
     {
         snapshot (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]), argc > 3 ? juce::String (argv[3]).getIntValue() : 0);
@@ -286,6 +395,7 @@ int main (int argc, char** argv)
     testEachModule();
     testFuzz();
     testPresets();
+    testNewEffects();
     std::cout << (failures == 0 ? "\nALL TESTS PASSED\n" : "\nFAILURES: " + std::to_string (failures) + "\n");
     return failures == 0 ? 0 : 1;
 }

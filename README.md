@@ -3,9 +3,11 @@
 **Free, open-source multi-FX for your DAW — crimson Frutiger Aero gloss meets the old-school internet.**
 By [Xain Jaya](https://xainjaya.com). VST3 · AU · LV2 · Standalone. Windows, macOS, Linux.
 
+<img src="docs/icon.png" width="96" align="right" alt="Evil FX mascot">
+
 ![Evil FX](docs/screenshot.png)
 
-31 effects, one tidy chain — but you only see the ones you add. Hit **+ ADD FX**, pick an effect from the categorized menu and its card drops into your **rack** (picking one that's already there jumps to it). Remove a card with its X, or bypass it with its power button. Effects that are off cost no CPU, and a safety limiter at the end keeps anything from blowing up your speakers.
+35 effects, one tidy chain — but you only see the ones you add. Hit **+ ADD FX**, pick an effect from the categorized menu and its card drops into your **rack** (picking one that's already there jumps to it). Remove a card with its X, or bypass it with its power button. Effects that are off cost no CPU, and a safety limiter at the end keeps anything from blowing up your speakers.
 
 ---
 
@@ -18,43 +20,54 @@ Signal always flows in this order, whichever effects you add.
 | 1 | **Transient Shaper** | Boost or soften attacks and tails | Attack, Sustain, Mix |
 | 2 | **Filter** | Resonant filter (LP / BP / HP) with an LFO sweep | Mode, Cutoff, Reso, LFO Rate, LFO Depth |
 | 3 | **Auto-Wah** | Envelope filter: play harder, it opens further | Sens, Range, Reso, Mix |
-| 4 | **EQ** | 3-band EQ: low shelf, sweepable mid, high shelf | Low, Mid, Mid Freq, High |
-| 5 | **Saturation** | Warm drive with tilt EQ and auto-gain | Drive, Tone, Mix |
-| 6 | **Pitch Shifter** | ±12 semitones | Pitch, Grain, Mix |
-| 7 | **Ring Modulator** | Ring mod with an optional ringtone-style arpeggio | Freq, Shape, Arp, Mix |
-| 8 | **Robot Voice** | Metallic text-to-speech robot | Pitch, Metal, Buzz, Mix |
-| 9 | **Lo-Fi Codec** | 90s audio: 22–5.5 kHz through 8-bit PCM, u-Law, A-Law or IMA ADPCM | Rate, Codec, Aliasing, Mix |
-| 10 | **Bitcrusher** | Bit-depth + sample-rate reduction | Bits, Rate, Mix |
-| 11 | **Telephone** | Phone line with hiss, hum, crackle and optional modem squeal | Band, Noise, Crackle, Mix, Modem |
-| 12 | **Vinyl Sim** | Crackle, dust pops, worn highs and 33⅓ rpm wow | Crackle, Wear, Wow, Mix |
-| 13 | **MP3 Compression** | Real spectral low-bitrate codec artifacts | Bitrate, Artifacts, Mix |
-| 14 | **Packet Loss** | VoIP dropouts — robot buzz, silence or comfort noise | Loss, Packet, Concealment, Mix |
-| 15 | **Stutter** | Streaming-style stutters and dropouts | Chance, Slice, Dropout, Mix |
-| 16 | **Data Corruption** | Bit flips and reversed fragments | Amount, Bits, Reverse, Mix |
-| 17 | **Varispeed** | Slows down, then speeds up to catch up (lag spike) | Chance, Length, Depth, Mix |
-| 18 | **Wow & Flutter** | Tape wow, flutter and clock drift | Wow, Flutter, Drift, Mix |
-| 19 | **Beat Repeat 🎵** | Repeat / stutter / reverse / tape stop on the grid | Division, Style, Chance, Mix |
-| 20 | **Trance Gate 🎵** | Rhythmic gate with 8 patterns | Pattern, Division, Depth, Smooth |
-| 21 | **Sidechain Pump 🎵** | Ducking on 1/2 to 1/16 notes | Rate, Depth, Release |
-| 22 | **Volume Swell** | Fades in every new note or chord | Attack, Sens, Mix |
-| 23 | **Chorus** | Lush stereo chorus | Rate, Depth, Feedback, Mix |
-| 24 | **Phaser** | Multi-stage phaser | Rate, Depth, Feedback, Mix |
-| 25 | **Tremolo / Pan** | Tremolo that morphs into auto-pan | Rate, Depth, Shape, Pan |
-| 26 | **Stereo Widener** | Mono-safe widener with slow motion | Width, Motion, Mix |
-| 27 | **Delay 🎵** | Stereo / ping-pong delay with tone and tempo sync | Sync, Time, Feedback, Tone, Mix |
-| 28 | **Blur** | Smears everything into a huge ambient wash. Shimmer adds octave-up sparkle, Freeze holds the sound forever | Size, Smear, Shimmer, Mix, Freeze |
-| 29 | **Reverb** | Big hall reverb | Size, Damp, Width, Mix |
-| 30 | **Compressor** | Easy compressor with auto makeup | Amount, Ratio, Speed, Mix |
-| 31 | **Speaker Sim** | PC speaker, laptop, flip phone, earbuds, CRT TV, boombox | Model, Drive, Mix |
+| 4 | **Talk Box ✨** | Vowel formant filter that morphs A-E-I-O-U, with an LFO so it talks | Voice, Vowel, Rate, Sweep, Mix |
+| 5 | **EQ** | 3-band EQ: low shelf, sweepable mid, high shelf | Low, Mid, Mid Freq, High |
+| 6 | **Saturation** | Warm drive with tilt EQ and auto-gain | Drive, Tone, Mix |
+| 7 | **Pitch Shifter** | ±12 semitones | Pitch, Grain, Mix |
+| 8 | **Ring Modulator** | Ring mod with an optional ringtone-style arpeggio | Freq, Shape, Arp, Mix |
+| 9 | **Freq Shifter ✨** | True frequency shifter (±2 kHz). A few Hz thickens, hundreds go alien; Spread shifts L and R in opposite directions | Shift, Feedback, Spread, Mix |
+| 10 | **Robot Voice** | Metallic text-to-speech robot | Pitch, Metal, Buzz, Mix |
+| 11 | **Lo-Fi Codec** | 90s audio: 22–5.5 kHz through 8-bit PCM, u-Law, A-Law or IMA ADPCM | Rate, Codec, Aliasing, Mix |
+| 12 | **Bitcrusher** | Bit-depth + sample-rate reduction | Bits, Rate, Mix |
+| 13 | **Telephone** | Phone line with hiss, hum, crackle and optional modem squeal | Band, Noise, Crackle, Mix, Modem |
+| 14 | **Vinyl Sim** | Crackle, dust pops, worn highs and 33⅓ rpm wow | Crackle, Wear, Wow, Mix |
+| 15 | **MP3 Compression** | Real spectral low-bitrate codec artifacts | Bitrate, Artifacts, Mix |
+| 16 | **Packet Loss** | VoIP dropouts — robot buzz, silence or comfort noise | Loss, Packet, Concealment, Mix |
+| 17 | **Stutter** | Streaming-style stutters and dropouts | Chance, Slice, Dropout, Mix |
+| 18 | **Data Corruption** | Bit flips and reversed fragments | Amount, Bits, Reverse, Mix |
+| 19 | **Varispeed** | Slows down, then speeds up to catch up (lag spike) | Chance, Length, Depth, Mix |
+| 20 | **Wow & Flutter** | Tape wow, flutter and clock drift | Wow, Flutter, Drift, Mix |
+| 21 | **Beat Repeat 🎵** | Repeat / stutter / reverse / tape stop on the grid | Division, Style, Chance, Mix |
+| 22 | **Trance Gate 🎵** | Rhythmic gate with 8 patterns | Pattern, Division, Depth, Smooth |
+| 23 | **Sidechain Pump 🎵** | Ducking on 1/2 to 1/16 notes | Rate, Depth, Release |
+| 24 | **Volume Swell** | Fades in every new note or chord | Attack, Sens, Mix |
+| 25 | **Chorus** | Lush stereo chorus | Rate, Depth, Feedback, Mix |
+| 26 | **Flanger ✨** | Jet-whoosh flanger with stereo sweep; negative feedback for a hollow tone | Rate, Depth, Feedback, Mix |
+| 27 | **Phaser** | Multi-stage phaser | Rate, Depth, Feedback, Mix |
+| 28 | **Tremolo / Pan** | Tremolo that morphs into auto-pan | Rate, Depth, Shape, Pan |
+| 29 | **Stereo Widener** | Mono-safe widener with slow motion | Width, Motion, Mix |
+| 30 | **Reverse Delay 🎵 ✨** | Plays each chunk back backwards — instant reverse swells | Sync, Time, Feedback, Mix |
+| 31 | **Delay 🎵** | Stereo / ping-pong delay with tone and tempo sync | Sync, Time, Feedback, Tone, Mix |
+| 32 | **Blur** | Smears everything into a huge ambient wash. Shimmer adds octave-up sparkle, Freeze holds the sound forever | Size, Smear, Shimmer, Mix, Freeze |
+| 33 | **Reverb** | Big hall reverb | Size, Damp, Width, Mix |
+| 34 | **Compressor** | Easy compressor with auto makeup | Amount, Ratio, Speed, Mix |
+| 35 | **Speaker Sim** | PC speaker, laptop, flip phone, earbuds, CRT TV, boombox | Model, Drive, Mix |
 | — | **Master** | Input / output gain, stereo width, global mix, safety limiter + meter | |
 
-🎵 = locks to your project tempo. With the transport stopped it keeps running on its own clock at the project BPM, so you can still hear it.
+✨ = new in v1.1. 🎵 = locks to your project tempo. With the transport stopped it keeps running on its own clock at the project BPM, so you can still hear it.
+
+## What's new in v1.1
+
+- **New logo** — a glossy blue smiley in a sideways orange cap with a purple-and-black checker patch. It's also the Standalone app icon.
+- **4 new effects** — Talk Box, Freq Shifter, Flanger and Reverse Delay (tempo-synced).
+- **18 new presets** spread across every category, e.g. *Smiley Says Hi*, *Talking Clouds*, *Reverse Halo*, *Jet Flanger Drums*, *Alien Transmission* and *Smiley Meltdown*.
+- Projects saved with v1.0 open with the same rack — the new effects just start switched off.
 
 ## Features
 
 - **+ ADD FX menu** — effects grouped into Tone & Dynamics, Pitch & Voice, Lo-Fi & Internet Damage, Rhythm (BPM synced), Modulation & Stereo, and Ambient & Space. Ticks show what's already in your rack.
 - **Full-width rack** — 5 cards across, scrolls when you add more, with a "more FX below" button and a glow on the card you just added or jumped to.
-- **65 factory presets** in categories: Start, Studio Tools, Heavenly, Ambient Pads, Internet Era, Rhythm & Glitch, Lo-Fi & Speakers, Chaos.
+- **83 factory presets** in categories: Start, Studio Tools, Heavenly, Ambient Pads, Internet Era, Rhythm & Glitch, Lo-Fi & Speakers, Chaos.
 - **Save your own presets** — hit **SAVE**. They're stored in `Documents/Evil FX/Presets` and appear under *Your Presets*. Share the `.evilfx` files with friends.
 - **RANDOM** — switches on a few random effects with random settings.
 - **Themes** — Aero Sky (default), Frutiger Metro and Crimson Grid, saved with your project.
@@ -83,7 +96,8 @@ Measured with `EvilFXTests --bench` (Release, 48 kHz stereo, one desktop core). 
 | Bitcrusher | 0.02 % | Wow & Flutter | 0.09 % | Compressor | 0.13 % |
 | Beat Repeat | 0.03 % | Trance Gate | 0.03 % | Speaker Sim | 0.33 % |
 | Blur | 0.60 % | Transient Shaper | 0.17 % | Volume Swell | 0.12 % |
-| Auto-Wah | 0.07 % | | | **All 31 on** | **~6 %** |
+| Auto-Wah | 0.07 % | Talk Box | 0.27 % | Freq Shifter | 0.26 % |
+| Flanger | 0.32 % | Reverse Delay | 0.30 % | **All 35 on** | **~6 %** |
 
 ## Building
 
@@ -128,10 +142,12 @@ Source/
   dsp/BeatModules.h     glitch, gate, nightcore, ringtone, glory comp
   dsp/ExtraModules.h    EQ, vinyl, robot voice, sidechain pump, stereo widener
   dsp/AmbientModules.h  transient shaper, auto-wah, volume swell, blur
-  ui/EvilLookAndFeel.h  glossy crimson orbs + Win9x bevels
+  dsp/FreshModules.h    talk box, frequency shifter, flanger, reverse delay
+  ui/EvilLookAndFeel.h  glossy crimson orbs, Win9x bevels, the smiley mascot logo
   ui/ModuleCard.h       one card per effect
   ui/Visualizer.h       VISUALIZER.EXE
-Tests/HeadlessTests.cpp stress test, fuzzing, presets, CPU bench, UI snapshot
+Tests/HeadlessTests.cpp stress test, fuzzing, presets, CPU bench, UI snapshot, icon render
+docs/icon.png           the mascot (app icon) — regenerate with `EvilFXTests --icon docs/icon.png 512`
 ```
 
 ### Adding an effect

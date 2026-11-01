@@ -305,6 +305,42 @@ namespace Params
         flt ("verb_width", "Reverb Width", lin (0.0f, 1.0f), 1.0f, pct());
         flt ("verb_mix",   "Reverb Mix",   lin (0.0f, 1.0f), 0.25f, pct());
 
+        // Talk Box — vowel formant filter that "talks"
+        onOff ("talk_on", "Talk Box On");
+        flt ("talk_vowel", "Talk Box Vowel", lin (0.0f, 1.0f), 0.0f,
+             Attr().withStringFromValueFunction ([] (float v, int)
+             {
+                 static const char* names[] { "A", "A-E", "E", "E-I", "I", "I-O", "O", "O-U", "U" };
+                 return juce::String (names[juce::jlimit (0, 8, juce::roundToInt (v * 8.0f))]);
+             }));
+        flt ("talk_rate",  "Talk Box Rate",  skewed (0.05f, 12.0f, 1.5f), 1.2f, hz());
+        flt ("talk_sweep", "Talk Box Sweep", lin (0.0f, 1.0f), 0.6f, pct());
+        flt ("talk_mix",   "Talk Box Mix",   lin (0.0f, 1.0f), 1.0f, pct());
+        p.push_back (std::make_unique<APC> (pid ("talk_voice"), "Talk Box Voice", juce::StringArray { "Deep", "Normal", "High" }, 1));
+
+        // Frequency Shifter — every partial moves by the same number of Hz
+        onOff ("fshift_on", "Freq Shifter On");
+        flt ("fshift_hz", "Freq Shift", juce::NormalisableRange<float> (-2000.0f, 2000.0f, 0.0f, 0.35f, true), 40.0f,
+             Attr().withStringFromValueFunction ([] (float v, int)
+             { return (v > 0 ? "+" : "") + (std::abs (v) < 10.0f ? juce::String (v, 2) : juce::String (juce::roundToInt (v))) + " Hz"; }));
+        flt ("fshift_fb",     "Freq Shifter Feedback", lin (0.0f, 1.0f), 0.0f, pct());
+        flt ("fshift_spread", "Freq Shifter Spread",   lin (0.0f, 1.0f), 0.0f, pct());
+        flt ("fshift_mix",    "Freq Shifter Mix",      lin (0.0f, 1.0f), 0.5f, pct());
+
+        // Flanger — jet whoosh
+        onOff ("flange_on", "Flanger On");
+        flt ("flange_rate",  "Flanger Rate",     skewed (0.02f, 5.0f, 0.4f), 0.25f, hz());
+        flt ("flange_depth", "Flanger Depth",    lin (0.0f, 1.0f), 0.7f, pct());
+        flt ("flange_fb",    "Flanger Feedback", lin (-0.95f, 0.95f), 0.6f, bip());
+        flt ("flange_mix",   "Flanger Mix",      lin (0.0f, 1.0f), 0.6f, pct());
+
+        // Reverse Delay — plays chunks backwards, tempo-syncable
+        onOff ("rdelay_on", "Reverse Delay On");
+        p.push_back (std::make_unique<APC> (pid ("rdelay_sync"), "Reverse Delay Sync", delaySyncNames(), 6));
+        flt ("rdelay_time", "Reverse Delay Time",     skewed (60.0f, 2000.0f, 500.0f), 500.0f, ms());
+        flt ("rdelay_fb",   "Reverse Delay Feedback", lin (0.0f, 0.9f), 0.3f, pct());
+        flt ("rdelay_mix",  "Reverse Delay Mix",      lin (0.0f, 1.0f), 0.4f, pct());
+
         // Master
         flt ("in_gain",  "Input Gain",   lin (-24.0f, 24.0f), 0.0f, db());
         flt ("out_gain", "Output Gain",  lin (-24.0f, 24.0f), 0.0f, db());
