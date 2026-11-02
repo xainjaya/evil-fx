@@ -1,7 +1,6 @@
 # Evil FX
 
-A free multi-effect plugin by [Xain Jaya](https://xainjaya.com). It's what you'd get if a 2009 Windows Vista install and an old Geocities page made an audio plugin together.
-
+A free multi-effect plugin by [Xain Jaya](https://xainjaya.com). 
 Runs as VST3, CLAP, AU, LV2 or a standalone app on Windows, macOS and Linux.
 
 <img src="docs/icon.png" width="96" align="right" alt="Evil FX mascot">
