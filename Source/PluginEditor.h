@@ -122,9 +122,6 @@ private:
     juce::String lastRack, lastOrder, note;
     juce::Array<int> dragSeq;
     int dragModule = -1;
-    float blink = 0.0f, grin = 0.0f;
-    int blinkCountdown = 40, blinkPhase = 0;
-    juce::Rectangle<int> logoArea { 14, 6, 120, 86 };
     int noteTicks = 0, inRack = 0;
     float marqueeX = 0.0f;
     int activeModules = -1, latency = -1;

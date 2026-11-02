@@ -87,6 +87,8 @@ public:
             sl->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 80, 16);
             sl->setPopupDisplayEnabled (false, false, nullptr);
             sl->setColour (juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
+            // set explicitly: the value box is created before the plugin's look-and-feel arrives
+            sl->setColour (juce::Slider::textBoxTextColourId, spec.retro ? juce::Colours::black : col::ink);
             sl->setColour (juce::Slider::textBoxBackgroundColourId, juce::Colours::transparentBlack);
             if (auto* p = state.getParameter (id))
             {
@@ -158,6 +160,11 @@ public:
     }
     bool isBeingDragged() const { return dragging; }
 
+    void mouseDoubleClick (const juce::MouseEvent& e) override   // double-click the title bar = bypass
+    {
+        if (spec.powerId != nullptr && e.y <= titleH + 2) power.triggerClick();
+    }
+
     // brief glow so you can spot the card you just jumped to
     void flash() { flashAmt = 1.0f; repaint(); }
     bool tickFlash()
@@ -192,7 +199,7 @@ public:
 
         // knob captions
         g.setFont (spec.retro ? mono (11.0f, true) : sans (11.5f, true));
-        g.setColour (spec.retro ? juce::Colours::black : col::ink.withAlpha (0.85f));
+        g.setColour (spec.retro ? juce::Colours::black : col::ink);
         for (int i = 0; i < sliders.size(); ++i)
             g.drawText (labels[i], captionBounds[(size_t) i], juce::Justification::centred);
     }
@@ -255,15 +262,15 @@ private:
         juce::DropShadow (juce::Colour (0x55400008), 12, { 0, 4 }).drawForPath (g, shape);
 
         const bool on = lastOn;
-        juce::ColourGradient glass (juce::Colours::white.withAlpha (on ? 0.72f : 0.5f), 0, r.getY(),
-                                    juce::Colour (0xffffd8d6).withAlpha (on ? 0.55f : 0.35f), 0, r.getBottom(), false);
+        juce::ColourGradient glass (juce::Colours::white.withAlpha (on ? 0.95f : 0.86f), 0, r.getY(),
+                                    juce::Colour (0xffffe6e4).withAlpha (on ? 0.92f : 0.8f), 0, r.getBottom(), false);
         g.setGradientFill (glass);
         g.fillPath (shape);
 
         // title bar
         auto bar = r.withHeight ((float) titleH + 2.0f);
         juce::Path barPath; barPath.addRoundedRectangle (bar.getX(), bar.getY(), bar.getWidth(), bar.getHeight(), corner, corner, true, true, false, false);
-        const auto top = spec.number == 0 ? juce::Colour (0xffffb36a) : juce::Colour (0xffff7a7a);
+        const auto top = spec.number == 0 ? juce::Colour (0xfff08a3a) : juce::Colour (0xffff7a7a);
         const auto bot = spec.number == 0 ? col::emberDeep : juce::Colour (0xffc0101c);
         juce::ColourGradient barGrad (top.withAlpha (on ? 0.95f : 0.55f), 0, bar.getY(), bot.withAlpha (on ? 0.95f : 0.55f), 0, bar.getBottom(), false);
         g.setGradientFill (barGrad);
@@ -294,8 +301,10 @@ private:
         const float tagW = juce::GlyphArrangement::getStringWidth (sans (11.0f), spec.tagline);
         if (titleW + tagW + 10.0f < titleArea.getWidth())
         {
-            g.setFont (sans (11.0f));
-            g.setColour (juce::Colours::white.withAlpha (0.85f));
+            g.setFont (sans (11.0f, true));
+            g.setColour (col::ink.withAlpha (0.35f));
+            g.drawText (spec.tagline, titleArea.translated (0.0f, 1.0f), juce::Justification::centredRight);
+            g.setColour (juce::Colours::white);
             g.drawText (spec.tagline, titleArea, juce::Justification::centredRight);
         }
 

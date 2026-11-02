@@ -375,14 +375,14 @@ void EvilFXProcessor::setStateInformation (const void* data, int size)
 juce::ValueTree EvilFXProcessor::soundSnapshot()
 {
     auto t = apvts.copyState();
-    for (auto* prop : { "theme", "vizOn", "vizMode" }) t.removeProperty (prop, nullptr);
+    for (auto* prop : { "theme", "vizOn", "vizMode", "editorW" }) t.removeProperty (prop, nullptr);
     return t;
 }
 
 void EvilFXProcessor::loadSnapshot (const juce::ValueTree& snap)
 {
     auto t = snap.createCopy();
-    for (auto* prop : { "theme", "vizOn", "vizMode" })
+    for (auto* prop : { "theme", "vizOn", "vizMode", "editorW" })
         if (apvts.state.hasProperty (prop)) t.setProperty (prop, apvts.state.getProperty (prop), nullptr);
     apvts.replaceState (t);
     if (! Rack::isValid (apvts.state)) Rack::syncFromParams (apvts);

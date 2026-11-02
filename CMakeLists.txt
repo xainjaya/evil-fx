@@ -109,7 +109,7 @@ if(EVIL_BUILD_TESTS)
     target_sources(EvilFXTests PRIVATE Tests/HeadlessTests.cpp ${EVIL_SOURCES})
     target_include_directories(EvilFXTests PRIVATE Source)
     target_compile_definitions(EvilFXTests PRIVATE ${EVIL_DEFS} EVIL_VERSION="${PROJECT_VERSION}"
-        JUCE_STANDALONE_APPLICATION=1 JucePlugin_Name="Evil FX")
+        JUCE_STANDALONE_APPLICATION=1 JucePlugin_Name="Evil FX" JUCE_MODAL_LOOPS_PERMITTED=1)
     target_link_libraries(EvilFXTests PRIVATE
         juce::juce_audio_utils juce::juce_dsp
         juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)

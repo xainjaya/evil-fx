@@ -561,7 +561,7 @@ template <typename T> T* findChild (juce::Component& root)
     return nullptr;
 }
 
-void snapshot (const juce::File& file, int theme, bool withBrowser = false)
+void snapshot (const juce::File& file, int theme, bool withBrowser = false, bool empty = false)
 {
     juce::ScopedJuceInitialiser_GUI gui;
     EvilFXProcessor p;
@@ -575,6 +575,7 @@ void snapshot (const juce::File& file, int theme, bool withBrowser = false)
     setParam (p, "trans_on", 1); setParam (p, "wah_on", 1);
     setParam (p, "talk_on", 1); setParam (p, "fshift_on", 1); setParam (p, "flange_on", 1); setParam (p, "rdelay_on", 1);
     setParam (p, "lobit_on", 0); setParam (p, "jit_on", 0);
+    if (empty) { resetAll (p); Rack::syncFromParams (p.apvts); }
     p.apvts.state.setProperty ("vizOn", true, nullptr);
     p.apvts.state.setProperty ("theme", theme, nullptr);
     run (p, 1.0);
@@ -616,22 +617,83 @@ void renderIcon (const juce::File& file, int size)
 
 int main (int argc, char** argv)
 {
-    if (argc > 2 && juce::String (argv[1]) == "--mascot")   // the animation states, side by side
+    if (argc > 2 && juce::String (argv[1]) == "--popup")   // draws the preset menu with the plugin's own menu drawing code
     {
         juce::ScopedJuceInitialiser_GUI gui;
-        const int cell = 220;
-        const std::pair<float, float> states[] { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 0.0f, 0.5f }, { 0.0f, 1.0f } };
-        juce::Image img (juce::Image::ARGB, cell * 4, cell, true);
+        EvilFXProcessor p; prepare (p);
+        p.setCurrentProgram (9);
+        std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
+        ed->setSize (EvilFXEditor::baseW, EvilFXEditor::baseH);
+        juce::ComboBox* box = nullptr;
+        std::function<void (juce::Component&)> walk = [&] (juce::Component& c)
+        {
+            for (auto* ch : c.getChildren())
+            {
+                if (auto* cb = dynamic_cast<juce::ComboBox*> (ch); cb != nullptr && cb->getTooltip() == "Factory and user presets") box = cb;
+                walk (*ch);
+            }
+        };
+        walk (*ed);
+        if (box == nullptr) { std::cout << "no preset box\n"; return 1; }
+        auto& lnf = ed->getLookAndFeel();
+        const int selected = box->getSelectedId();
+
+        // split into columns at the column breaks, measure each column
+        struct Row { juce::String text; bool header; int id; int h; };
+        std::vector<std::vector<Row>> cols (1);
+        std::vector<int> widths (1, 0);
+        for (juce::PopupMenu::MenuItemIterator it (*box->getRootMenu()); it.next();)
+        {
+            auto& item = it.getItem();
+            int w = 0, h = 0;
+            lnf.getIdealPopupMenuItemSize (item.text, item.isSeparator, 22, w, h);
+            cols.back().push_back ({ item.text, item.isSectionHeader, item.itemID, item.isSectionHeader ? 26 : h });
+            widths.back() = juce::jmax (widths.back(), w + 20);
+            if (item.shouldBreakAfter) { cols.emplace_back(); widths.push_back (0); }
+        }
+        int totalW = 0, maxH = 0;
+        for (size_t c = 0; c < cols.size(); ++c)
+        {
+            totalW += widths[c] + (c > 0 ? 8 : 0);
+            int h = 0; for (auto& r : cols[c]) h += r.h;
+            maxH = juce::jmax (maxH, h);
+        }
+        juce::Image img (juce::Image::ARGB, totalW + 8, maxH + 8, true);
         {
             juce::Graphics g (img);
-            g.fillAll (juce::Colour (0xffeaf2ff));
-            for (int k = 0; k < 4; ++k)
-                aero::drawSmiley (g, { cell * k + cell * 0.42f, cell * 0.6f }, cell / 3.6f, states[k].first, states[k].second);
+            lnf.drawPopupMenuBackground (g, img.getWidth(), img.getHeight());
+            int x = 4;
+            for (size_t c = 0; c < cols.size(); ++c)
+            {
+                if (c > 0)
+                {
+                    lnf.drawPopupMenuColumnSeparatorWithOptions (g, { x, 4, 8, maxH }, juce::PopupMenu::Options());
+                    x += 8;
+                }
+                int y = 4, k = 0;
+                for (auto& r : cols[c])
+                {
+                    const juce::Rectangle<int> area (x, y, widths[c], r.h);
+                    if (r.header) lnf.drawPopupMenuSectionHeader (g, area, r.text);
+                    else
+                    {
+                        juce::Graphics::ScopedSaveState ss (g);
+                        g.setOrigin (area.getPosition());
+                        // highlight the 4th item of the 2nd column to show what hovering looks like
+                        lnf.drawPopupMenuItem (g, area.withPosition (0, 0), false, true, c == 1 && k == 4, r.id == selected,
+                                               false, r.text, {}, nullptr, nullptr);
+                        ++k;
+                    }
+                    y += r.h;
+                }
+                x += widths[c];
+            }
         }
         juce::File f = juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]);
         f.deleteFile();
         juce::FileOutputStream os (f);
         juce::PNGImageFormat().writeImageToStream (img, os);
+        std::cout << "menu " << cols.size() << " columns, " << img.getWidth() << "x" << img.getHeight() << std::endl;
         return 0;
     }
     if (argc > 2 && juce::String (argv[1]) == "--icon")
@@ -642,7 +704,7 @@ int main (int argc, char** argv)
     if (argc > 2 && juce::String (argv[1]) == "--snapshot")
     {
         snapshot (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]), argc > 3 ? juce::String (argv[3]).getIntValue() : 0,
-                  argc > 4 && juce::String (argv[4]) == "browser");
+                  argc > 4 && juce::String (argv[4]) == "browser", argc > 4 && juce::String (argv[4]) == "empty");
         return failures;
     }
     if (argc > 3 && juce::String (argv[1]) == "--module")   // debugging aid: --module prefix mode(0 default,1 min,2 max)

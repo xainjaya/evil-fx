@@ -138,70 +138,108 @@ namespace
 
     //==========================================================================
     // Backgrounds. Each is painted once into an image when chosen.
+    // Frutiger Metro: a flat, Windows 8 style start screen. No gradients, no gloss:
+    // solid background, square tiles on a grid in groups, flat white glyphs
+    // and an oversized panorama title running off the edge.
+    void drawMetroGlyph (juce::Graphics& g, int kind, juce::Rectangle<float> b)
+    {
+        g.setColour (juce::Colours::white.withAlpha (0.55f));
+        const auto c = b.getCentre();
+        const float r = juce::jmin (b.getWidth(), b.getHeight()) * 0.5f;
+        juce::Path p;
+        switch (kind)
+        {
+            case 0:   // note
+                g.fillEllipse (c.x - r * 0.55f, c.y + r * 0.2f, r * 0.62f, r * 0.48f);
+                g.fillRect (c.x + r * 0.0f, c.y - r * 0.75f, r * 0.12f, r * 1.2f);
+                g.fillRect (c.x + r * 0.0f, c.y - r * 0.75f, r * 0.5f, r * 0.12f);
+                break;
+            case 1:   // waveform
+                p.startNewSubPath (c.x - r, c.y);
+                for (int i = 1; i <= 24; ++i)
+                {
+                    const float t = (float) i / 24.0f;
+                    p.lineTo (c.x - r + 2.0f * r * t, c.y - std::sin (t * 18.85f) * r * 0.6f * std::sin (t * 3.1416f));
+                }
+                g.strokePath (p, juce::PathStrokeType (r * 0.1f));
+                break;
+            case 2:   // equaliser bars
+                for (int i = 0; i < 4; ++i)
+                {
+                    const float hgt = r * (0.6f + 0.35f * (float) ((i * 7) % 4));
+                    g.fillRect (c.x - r + (float) i * r * 0.55f, c.y + r * 0.7f - hgt, r * 0.38f, hgt);
+                }
+                break;
+            case 3:   // play
+                p.addTriangle (c.x - r * 0.45f, c.y - r * 0.6f, c.x - r * 0.45f, c.y + r * 0.6f, c.x + r * 0.6f, c.y);
+                g.fillPath (p);
+                break;
+            case 4:   // ring
+                g.drawEllipse (b.reduced (r * 0.2f), r * 0.12f);
+                break;
+            case 5:   // smiley (the mascot, Metro-flat)
+                g.drawEllipse (b.reduced (r * 0.15f), r * 0.1f);
+                g.fillEllipse (c.x - r * 0.35f, c.y - r * 0.3f, r * 0.16f, r * 0.26f);
+                g.fillEllipse (c.x + r * 0.19f, c.y - r * 0.3f, r * 0.16f, r * 0.26f);
+                p.addCentredArc (c.x, c.y + r * 0.05f, r * 0.42f, r * 0.36f, 0.0f, 2.2f, 4.08f, true);
+                g.strokePath (p, juce::PathStrokeType (r * 0.1f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+                break;
+            default:  // globe
+                g.drawEllipse (b.reduced (r * 0.2f), r * 0.09f);
+                g.drawEllipse (c.x - r * 0.35f, c.y - r * 0.8f, r * 0.7f, r * 1.6f, r * 0.07f);
+                g.fillRect (c.x - r * 0.8f, c.y - r * 0.04f, r * 1.6f, r * 0.08f);
+                break;
+        }
+    }
+
     void paintFrutigerMetro (juce::Graphics& g, int W, int H)
     {
         const float w = (float) W, h = (float) H;
-        juce::ColourGradient base (juce::Colour (0xff4a0412), 0, 0, juce::Colour (0xffff5a3c), w, h, false);
-        base.addColour (0.5, juce::Colour (0xffc8102e));
-        g.setGradientFill (base);
-        g.fillAll();
+        g.fillAll (juce::Colour (0xff1f0610));   // flat start-screen background
 
-        // soft glow top-left, like light hitting glass
-        g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.25f), w * 0.15f, h * 0.05f,
-                                                 juce::Colours::white.withAlpha (0.0f), w * 0.6f, h * 0.5f, true));
-        g.fillRect (0, 0, W, H);
+        // panorama title, huge and thin, cropped by the window edge
+        g.setColour (juce::Colours::white.withAlpha (0.07f));
+        g.setFont (juce::Font (juce::FontOptions (330.0f)));
+        g.drawText ("evil fx", juce::Rectangle<float> (-30.0f, h - 330.0f, w * 1.4f, 360.0f), juce::Justification::bottomLeft, false);
 
-        juce::Random rnd (2012);
-        // big bokeh circles
-        for (int i = 0; i < 26; ++i)
+        // Metro accent palette, warm end (crimson / red / orange / amber / magenta / pink)
+        const juce::Colour palette[] { juce::Colour (0xffa20025), juce::Colour (0xffe51400), juce::Colour (0xfffa6800),
+                                       juce::Colour (0xfff0a30a), juce::Colour (0xffd80073), juce::Colour (0xffc1004f),
+                                       juce::Colour (0xff6d0019) };
+
+        constexpr float unit = 118.0f, gutter = 8.0f, groupGap = 44.0f;
+        constexpr int groupCols = 4, rows = 6;
+        juce::Random rnd (8);
+        float gx = 34.0f;
+        const float top = 112.0f;
+        while (gx < w)
         {
-            const float x = rnd.nextFloat() * w, y = rnd.nextFloat() * h, r = 20.0f + rnd.nextFloat() * 110.0f;
-            g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.02f + rnd.nextFloat() * 0.08f), x, y,
-                                                     juce::Colours::white.withAlpha (0.0f), x + r, y, true));
-            g.fillEllipse (x - r, y - r, r * 2, r * 2);
-        }
-
-        // tilted wall of flat "live tiles"
-        {
-            juce::Graphics::ScopedSaveState ss (g);
-            g.addTransform (juce::AffineTransform::rotation (-0.21f, w * 0.7f, h * 0.5f));
-            const float tile = 104.0f, tg = 10.0f;
-            const juce::Colour accents[] { juce::Colours::white, juce::Colour (0xffffb36a), juce::Colour (0xff2a0006), juce::Colour (0xffff7a8a) };
-            for (int row = -2; row < 9; ++row)
-                for (int col = 0; col < 9; ++col)
+            bool used[rows][groupCols] {};
+            for (int r = 0; r < rows; ++r)
+                for (int c = 0; c < groupCols; ++c)
                 {
-                    if (rnd.nextFloat() < 0.18f) continue;   // gaps make it feel arranged, not tiled
-                    const bool wide = rnd.nextFloat() < 0.2f;
-                    const float x = w * 0.42f + (float) col * (tile + tg), y = (float) row * (tile + tg);
-                    const auto c = accents[rnd.nextInt (10) < 7 ? 0 : 1 + rnd.nextInt (3)];
-                    const float a = c == juce::Colours::white ? 0.04f + rnd.nextFloat() * 0.09f : 0.12f + rnd.nextFloat() * 0.12f;
-                    auto rect = juce::Rectangle<float> (x, y, wide ? tile * 2 + tg : tile, tile);
-                    g.setColour (c.withAlpha (a));
-                    g.fillRect (rect);
-                    g.setColour (juce::Colours::white.withAlpha (a * 0.8f));   // a hint of Frutiger gloss on each tile
-                    g.fillRect (rect.withHeight (tile * 0.35f));
-                    if (wide) col++;
+                    if (used[r][c]) continue;
+                    // pick a tile size that fits: 2x2 (big), 2x1 (wide) or 1x1
+                    int tw = 1, th = 1;
+                    const float roll = rnd.nextFloat();
+                    if (roll < 0.18f && c + 1 < groupCols && r + 1 < rows && ! used[r][c + 1] && ! used[r + 1][c] && ! used[r + 1][c + 1]) { tw = 2; th = 2; }
+                    else if (roll < 0.5f && c + 1 < groupCols && ! used[r][c + 1]) tw = 2;
+                    for (int dr = 0; dr < th; ++dr) for (int dc = 0; dc < tw; ++dc) used[r + dr][c + dc] = true;
+                    if (rnd.nextFloat() < 0.1f) continue;   // the odd empty slot
+
+                    const auto tile = juce::Rectangle<float> (gx + (float) c * (unit + gutter), top + (float) r * (unit + gutter),
+                                                              (float) tw * unit + (float) (tw - 1) * gutter,
+                                                              (float) th * unit + (float) (th - 1) * gutter);
+                    // full-strength accents would shout over the rack, so tiles sit a step darker
+                    g.setColour (palette[rnd.nextInt (7)].interpolatedWith (juce::Colour (0xff1f0610), 0.42f));
+                    g.fillRect (tile);
+
+                    const float glyph = tile.getHeight() * (th == 2 ? 0.34f : 0.36f);
+                    drawMetroGlyph (g, rnd.nextInt (7), juce::Rectangle<float> (glyph, glyph)
+                                                            .withCentre ({ tile.getCentreX(), tile.getCentreY() - tile.getHeight() * 0.06f }));
                 }
+            gx += (float) groupCols * (unit + gutter) - gutter + groupGap;
         }
-
-        // thin Metro accent lines + a big ring
-        g.setColour (juce::Colours::white.withAlpha (0.14f));
-        for (int i = 0; i < 5; ++i)
-        {
-            const float y0 = h * (0.15f + 0.17f * (float) i);
-            g.drawLine (0.0f, y0 + 120.0f, w, y0 - 140.0f, 1.0f);
-        }
-        g.setColour (juce::Colours::white.withAlpha (0.12f));
-        g.drawEllipse (w * 0.08f - 260.0f, h * 0.85f - 260.0f, 520.0f, 520.0f, 2.0f);
-        g.drawEllipse (w * 0.08f - 300.0f, h * 0.85f - 300.0f, 600.0f, 600.0f, 1.0f);
-
-        // broad diagonal light beam
-        juce::Path beam;
-        beam.startNewSubPath (w * 0.25f, 0.0f); beam.lineTo (w * 0.45f, 0.0f);
-        beam.lineTo (w * 0.05f, h); beam.lineTo (-w * 0.15f, h); beam.closeSubPath();
-        g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.12f), w * 0.3f, 0.0f,
-                                                 juce::Colours::white.withAlpha (0.0f), 0.0f, h, false));
-        g.fillPath (beam);
     }
 
     void paintAeroSky (juce::Graphics& g, int W, int H)
@@ -522,7 +560,10 @@ EvilFXEditor::EvilFXEditor (EvilFXProcessor& p) : AudioProcessorEditor (p), proc
     setResizable (true, true);
     getConstrainer()->setFixedAspectRatio ((double) baseW / (double) baseH);
     setResizeLimits (baseW / 2, baseH / 2, baseW * 3 / 2, baseH * 3 / 2);
-    setSize (baseW * 8 / 10, baseH * 8 / 10);
+    // reopen at the size you last left it (saved with the project)
+    const int savedW = (int) proc.apvts.state.getProperty ("editorW", baseW * 8 / 10);
+    const int startW = juce::jlimit (baseW / 2, baseW * 3 / 2, savedW);
+    setSize (startW, juce::roundToInt (startW * (double) baseH / baseW));
 
     timerCallback();   // fill rack, meters and counters right away
     startTimerHz (viz.isOn() ? 30 : 15);
@@ -537,6 +578,7 @@ EvilFXEditor::~EvilFXEditor()
 
 void EvilFXEditor::resized()
 {
+    if (getWidth() > 0) proc.apvts.state.setProperty ("editorW", getWidth(), nullptr);
     desktop.setBounds (0, 0, baseW, baseH);
     desktop.setTransform (juce::AffineTransform::scale ((float) getWidth() / (float) baseW));
 
@@ -854,6 +896,11 @@ bool EvilFXEditor::keyPressed (const juce::KeyPress& k)
     if (cmd && k.getKeyCode() == 'Z') { doUndo (mods.isShiftDown()); return true; }
     if (cmd && k.getKeyCode() == 'Y') { doUndo (true); return true; }
     if (cmd && k.getKeyCode() == 'F') { openBrowser(); return true; }
+    if (! browser.isVisible() && ! mods.isAnyModifierKeyDown())
+    {
+        if (k.getKeyCode() == juce::KeyPress::leftKey)  { prevBtn.triggerClick(); return true; }
+        if (k.getKeyCode() == juce::KeyPress::rightKey) { nextBtn.triggerClick(); return true; }
+    }
     return false;
 }
 
@@ -887,36 +934,59 @@ void EvilFXEditor::updateMoreHint()
 void EvilFXEditor::rebuildPresetMenu()
 {
     presetBox.clear (juce::dontSendNotification);
-    juce::String lastCat;
     const auto& list = Presets::all();
     userFiles = Presets::userPresets();
+    const auto favs = Presets::loadFavourites();
 
-    const auto favs = Presets::loadFavourites();   // starred presets get their own section on top
-    if (! favs.isEmpty())
+    // gather the sections first so they can be split into balanced columns
+    struct Section { juce::String heading; std::vector<std::pair<juce::String, int>> items; };
+    std::vector<Section> sections;
     {
-        bool any = false;
+        Section fav { "Favourites", {} };   // starred presets get their own section first
         for (int i = 0; i < (int) list.size(); ++i)
-            if (favs.contains (Presets::favKeyFactory (list[(size_t) i].name)))
-            {
-                if (! any) { presetBox.addSectionHeading ("Favourites"); any = true; }
-                presetBox.addItem (list[(size_t) i].name, 2000 + i);
-            }
+            if (favs.contains (Presets::favKeyFactory (list[(size_t) i].name))) fav.items.push_back ({ list[(size_t) i].name, 2000 + i });
         for (int i = 0; i < userFiles.size(); ++i)
             if (favs.contains (Presets::favKeyUser (userFiles[i].getFileNameWithoutExtension())))
-            {
-                if (! any) { presetBox.addSectionHeading ("Favourites"); any = true; }
-                presetBox.addItem (userFiles[i].getFileNameWithoutExtension(), 3000 + i);
-            }
+                fav.items.push_back ({ userFiles[i].getFileNameWithoutExtension(), 3000 + i });
+        if (! fav.items.empty()) sections.push_back (fav);
     }
     for (int i = 0; i < (int) list.size(); ++i)
     {
-        if (lastCat != list[(size_t) i].category) { lastCat = list[(size_t) i].category; presetBox.addSectionHeading (lastCat); }
-        presetBox.addItem (list[(size_t) i].name, i + 1);
+        if (sections.empty() || sections.back().heading != list[(size_t) i].category || sections.back().items.front().second >= 2000)
+            sections.push_back ({ list[(size_t) i].category, {} });
+        sections.back().items.push_back ({ list[(size_t) i].name, i + 1 });
     }
     if (! userFiles.isEmpty())
     {
-        presetBox.addSectionHeading ("Your Presets");
-        for (int i = 0; i < userFiles.size(); ++i) presetBox.addItem (userFiles[i].getFileNameWithoutExtension(), 1000 + i);
+        Section mine { "Your Presets", {} };
+        for (int i = 0; i < userFiles.size(); ++i) mine.items.push_back ({ userFiles[i].getFileNameWithoutExtension(), 1000 + i });
+        sections.push_back (mine);
+    }
+
+    // about 26 rows per column, breaking only between categories
+    int totalRows = 0;
+    for (auto& sec : sections) totalRows += (int) sec.items.size() + 1;
+    const int numCols = juce::jlimit (1, 5, (totalRows + 25) / 26);
+    const int perCol = (totalRows + numCols - 1) / numCols;
+
+    int rowsInCol = 0, col = 1;
+    for (size_t k = 0; k < sections.size(); ++k)
+    {
+        auto& sec = sections[k];
+        presetBox.addSectionHeading (sec.heading);
+        for (auto& [name, id] : sec.items) presetBox.addItem (name, id);
+        rowsInCol += (int) sec.items.size() + 1;
+        if (col < numCols && k + 1 < sections.size())
+        {
+            const int nextRows = (int) sections[k + 1].items.size() + 1;
+            // break here if the next section would overshoot this column by more than it undershoots
+            if (rowsInCol + nextRows - perCol > perCol - rowsInCol)
+            {
+                presetBox.getRootMenu()->addColumnBreak();
+                rowsInCol = 0;
+                ++col;
+            }
+        }
     }
     syncPresetBox();
 }
@@ -961,7 +1031,8 @@ void EvilFXEditor::showHelp()
         "Signal flows left to right, top to bottom, in the numbered order.\n"
         "Drag a card's title bar to move it in the chain; right-click a title bar for more.\n\n"
         "UNDO / REDO (Ctrl/Cmd+Z) step back through any change. A / B holds two sounds to compare; A > B copies.\n"
-        "BROWSE (Ctrl/Cmd+F) searches every preset; click a star to favourite it.\n\n"
+        "BROWSE (Ctrl/Cmd+F) searches every preset; click a star to favourite it. Left/Right arrows step through presets.\n"
+        "Double-click a card's title bar to bypass it.\n\n"
         "Beat Repeat, Trance Gate, Sidechain Pump, Delay and Reverse Delay sync to your project tempo,\n"
         "and the SYNC dropdowns lock Filter, Talk Box, Chorus, Flanger, Phaser and Tremolo to it too.\n"
         "Sidechain Pump, Noise Gate and Vocoder can use your DAW's sidechain input (SC shows in the status bar).\nFor huge ambient pads try Blur (Freeze holds the sound forever) with Volume Swell.\n\n"
@@ -991,30 +1062,6 @@ void EvilFXEditor::timerCallback()
     syncPresetBox();
     updateUndoButtons();
 
-    // mascot: blinks every few seconds, grins wider the louder it gets
-    {
-        const float hz = viz.isOn() ? 30.0f : 15.0f;
-        float newBlink = 0.0f;
-        if (blinkPhase > 0)
-        {
-            blinkPhase = juce::jmax (0, blinkPhase - (int) (30.0f / hz));
-            const float t = (float) blinkPhase / 6.0f;          // 6 ticks @30 Hz = 200 ms
-            newBlink = 1.0f - std::abs (2.0f * t - 1.0f);
-        }
-        else if (--blinkCountdown <= 0)
-        {
-            blinkPhase = 6;
-            blinkCountdown = (int) (hz * (2.5f + juce::Random::getSystemRandom().nextFloat() * 4.0f));
-        }
-        const float level = juce::jmax (proc.meterL.load(), proc.meterR.load());
-        const float targetGrin = juce::jlimit (0.0f, 1.0f, (juce::Decibels::gainToDecibels (level, -60.0f) + 30.0f) / 24.0f);
-        const float newGrin = grin + (targetGrin - grin) * (targetGrin > grin ? 0.5f : 0.12f);
-        if (std::abs (newBlink - blink) > 0.01f || std::abs (newGrin - grin) > 0.01f)
-        {
-            blink = newBlink; grin = newGrin;
-            desktop.repaint (logoArea);
-        }
-    }
 
     for (auto* c : cards) c->tickFlash();
 
@@ -1076,8 +1123,8 @@ void EvilFXEditor::Desktop::paint (juce::Graphics& g)
 
     // header glass
     auto header = juce::Rectangle<float> ((float) margin, 6.0f, W - 2.0f * margin, (float) headerH - 10.0f);
-    g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.7f), 0, header.getY(),
-                                             juce::Colour (0xffffd6d0).withAlpha (0.46f), 0, header.getBottom(), false));
+    g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.9f), 0, header.getY(),
+                                             juce::Colour (0xffffe0dc).withAlpha (0.82f), 0, header.getBottom(), false));
     g.fillRoundedRectangle (header, 18.0f);
     g.setColour (juce::Colours::white.withAlpha (0.4f));
     g.fillRoundedRectangle (header.withHeight (header.getHeight() * 0.45f).reduced (6.0f, 2.0f), 14.0f);
@@ -1086,14 +1133,14 @@ void EvilFXEditor::Desktop::paint (juce::Graphics& g)
 
     owner.drawLogo (g, header.withWidth (330.0f));
 
-    g.setColour (col::ink.withAlpha (0.7f));
+    g.setColour (col::ink.withAlpha (0.85f));
     g.setFont (sans (10.5f, true));
     g.drawText ("P R E S E T", owner.presetBox.getBounds().withY (22).withHeight (14), juce::Justification::centred);
 
     // toolbar glass
     const auto tb = owner.toolbarArea.toFloat();
-    g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.6f), 0, tb.getY(),
-                                             juce::Colour (0xffffd6d0).withAlpha (0.4f), 0, tb.getBottom(), false));
+    g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.88f), 0, tb.getY(),
+                                             juce::Colour (0xffffe0dc).withAlpha (0.8f), 0, tb.getBottom(), false));
     g.fillRoundedRectangle (tb, 12.0f);
     g.setColour (juce::Colours::white.withAlpha (0.8f));
     g.drawRoundedRectangle (tb, 12.0f, 1.0f);
@@ -1102,12 +1149,12 @@ void EvilFXEditor::Desktop::paint (juce::Graphics& g)
     const int textX = owner.clearBtn.getRight() + 14;
     g.drawText (juce::String (owner.inRack) + (owner.inRack == 1 ? " effect" : " effects") + " in your rack",
                 juce::Rectangle<int> (textX, owner.toolbarArea.getY(), 200, owner.toolbarArea.getHeight()), juce::Justification::centredLeft);
-    g.setColour (col::ink.withAlpha (0.55f));
+    g.setColour (col::ink.withAlpha (0.75f));
     g.setFont (sans (11.5f));
     g.drawText ("drag title bars to reorder",
                 juce::Rectangle<int> (textX + 165, owner.toolbarArea.getY(), owner.undoBtn.getX() - textX - 170, owner.toolbarArea.getHeight()),
                 juce::Justification::centredLeft);
-    g.setColour (col::ink.withAlpha (0.7f));
+    g.setColour (col::ink.withAlpha (0.85f));
     g.setFont (sans (10.5f, true));
     g.drawText ("THEME", owner.themeBox.getBounds().translated (-52, 0).withWidth (48), juce::Justification::centredRight);
 
@@ -1144,7 +1191,7 @@ void EvilFXEditor::Desktop::paint (juce::Graphics& g)
 void EvilFXEditor::drawLogo (juce::Graphics& g, juce::Rectangle<float> area)
 {
     const float r = 27.0f;
-    drawSmiley (g, { area.getX() + 40.0f, area.getCentreY() + 9.0f }, r, blink, grin);
+    drawSmiley (g, { area.getX() + 40.0f, area.getCentreY() + 9.0f }, r);
 
     const float tx = area.getX() + 40.0f + r * 1.62f + 10.0f;   // clear of the cap brim
     juce::GlyphArrangement ga;
@@ -1173,19 +1220,21 @@ void EvilFXEditor::drawLogo (juce::Graphics& g, juce::Rectangle<float> area)
 void EvilFXEditor::RackArea::paint (juce::Graphics& g)
 {
     if (! empty) return;
-    auto r = getLocalBounds().toFloat().withSizeKeepingCentre (480.0f, 150.0f).translated (0.0f, -footerH / 2.0f);
-    g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.7f), 0, r.getY(),
-                                             juce::Colour (0xffffd8d6).withAlpha (0.5f), 0, r.getBottom(), false));
+    auto r = getLocalBounds().toFloat().withSizeKeepingCentre (520.0f, 170.0f).translated (0.0f, -footerH / 2.0f);
+    g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.92f), 0, r.getY(),
+                                             juce::Colour (0xffffe4e2).withAlpha (0.88f), 0, r.getBottom(), false));
     g.fillRoundedRectangle (r, 18.0f);
-    g.setColour (juce::Colours::white.withAlpha (0.85f));
+    g.setColour (juce::Colours::white);
     g.drawRoundedRectangle (r, 18.0f, 1.2f);
+    drawSmiley (g, { r.getX() + 78.0f, r.getCentreY() + 14.0f }, 34.0f);   // the mascot keeps you company
+    auto text = r.withTrimmedLeft (150.0f).reduced (8.0f, 0.0f);
     g.setColour (col::ink);
     g.setFont (sans (24.0f, true));
-    g.drawText ("Your rack is empty", r.withTrimmedBottom (50.0f), juce::Justification::centred);
+    g.drawText ("Your rack is empty", text.withTrimmedBottom (60.0f), juce::Justification::centredLeft);
     g.setFont (sans (14.0f));
-    g.setColour (col::ink.withAlpha (0.75f));
-    g.drawText ("Hit + ADD FX to pick your effects,", r.withTrimmedTop (60.0f).withTrimmedBottom (30.0f), juce::Justification::centred);
-    g.drawText ("load a preset, or hit RANDOM.", r.withTrimmedTop (86.0f).withTrimmedBottom (8.0f), juce::Justification::centred);
+    g.setColour (col::ink.withAlpha (0.85f));
+    g.drawText ("Hit + ADD FX to pick your effects,", text.withTrimmedTop (66.0f).withTrimmedBottom (34.0f), juce::Justification::centredLeft);
+    g.drawText ("load a preset, or hit RANDOM.", text.withTrimmedTop (92.0f).withTrimmedBottom (8.0f), juce::Justification::centredLeft);
 }
 
 void EvilFXEditor::SiteLink::paintButton (juce::Graphics& g, bool hover, bool down)

@@ -101,7 +101,7 @@ public:
         g.setColour (juce::Colours::white.withAlpha (0.9f));
         g.strokePath (shape, juce::PathStrokeType (1.3f));
 
-        g.setColour (col::ink.withAlpha (0.6f));
+        g.setColour (col::ink.withAlpha (0.8f));
         g.setFont (sans (11.5f));
         g.drawText ("Click to hear it  -  double-click or Enter to keep it  -  click the star to favourite  -  Esc to close",
                     panel.withTop (panel.getBottom() - 30).reduced (18, 0), juce::Justification::centredLeft);
@@ -206,7 +206,7 @@ private:
         const auto& e = entries[(size_t) shown[row]];
         if (selected)
         {
-            g.setGradientFill (juce::ColourGradient (juce::Colour (0xffff8a7a), 0, 0, juce::Colour (0xffd8202e), 0, (float) h, false));
+            g.setGradientFill (juce::ColourGradient (juce::Colour (0xffc8202c), 0, 0, juce::Colour (0xff9a0c18), 0, (float) h, false));
             g.fillRect (0, 0, w, h);
         }
         else if (row % 2) { g.setColour (juce::Colours::white.withAlpha (0.35f)); g.fillRect (0, 0, w, h); }
@@ -231,7 +231,7 @@ private:
         g.setFont (sans (14.5f, true));
         g.drawText (e.name, juce::Rectangle<int> (38, 0, w - 200, h), juce::Justification::centredLeft);
         g.setFont (sans (12.0f));
-        g.setColour (selected ? juce::Colours::white.withAlpha (0.85f) : col::ink.withAlpha (0.55f));
+        g.setColour (selected ? juce::Colours::white.withAlpha (0.9f) : col::ink.withAlpha (0.7f));
         g.drawText (e.category, juce::Rectangle<int> (w - 170, 0, 160, h), juce::Justification::centredRight);
     }
 

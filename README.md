@@ -1,216 +1,195 @@
 # Evil FX
 
-**Free, open-source multi-FX for your DAW — crimson Frutiger Aero gloss meets the old-school internet.**
-By [Xain Jaya](https://xainjaya.com). VST3 · CLAP · AU · LV2 · Standalone. Windows, macOS, Linux.
+A free multi-effect plugin by [Xain Jaya](https://xainjaya.com). It's what you'd get if a 2009 Windows Vista install and an old Geocities page made an audio plugin together.
+
+Runs as VST3, CLAP, AU, LV2 or a standalone app on Windows, macOS and Linux.
 
 <img src="docs/icon.png" width="96" align="right" alt="Evil FX mascot">
 
 ![Evil FX](docs/screenshot.png)
 
-39 effects in a chain **you** arrange — and you only see the ones you add. Hit **+ ADD FX**, pick an effect from the categorized menu and its card drops into your **rack** (picking one that's already there jumps to it). **Drag a card's title bar to move it in the chain** (or right-click the title bar). Remove a card with its X, or bypass it with its power button. Effects that are off cost no CPU, and a safety limiter at the end keeps anything from blowing up your speakers.
+## How it works
 
----
+There are 39 effects in here, but you only see the ones you're using. Click **+ ADD FX**, pick something, and it drops into your rack as a card. Close it with the X, or hit the power button if you just want to bypass it for a sec (double-clicking the title bar does the same thing).
 
-## The chain
+Want the reverb before the distortion? Drag the card by its title bar and drop it where you want it. Right-clicking the title bar gives you a few shortcuts too, including putting everything back in the default order.
 
-This is the default order. **Drag any card's title bar to move it** — put the reverb before the fuzz, the reverse delay after the blur, whatever you like. Right-click a title bar for *move to start / earlier / later / end* and *reset to the default order*. Your order saves with the project and with your own presets; factory presets start from the default order.
+A few other things worth knowing:
 
-| # | Effect | What it does | Controls |
-|---|--------|--------------|----------|
-| 1 | **Noise Gate ✨** | Gate with hysteresis and hold; can be keyed from the sidechain | Key, Threshold, Range, Release |
-| 2 | **Transient Shaper** | Boost or soften attacks and tails | Attack, Sustain, Mix |
-| 3 | **Auto-Tune ✨** | Pitch correction to a key and scale. Speed 0 = the hard robot snap | Key, Scale, Speed, Amount, Mix |
-| 4 | **Filter** | Resonant filter (LP / BP / HP) with an LFO sweep | Mode, Sync, Cutoff, Reso, LFO Rate, LFO Depth |
-| 5 | **Auto-Wah** | Envelope filter: play harder, it opens further | Sens, Range, Reso, Mix |
-| 6 | **Talk Box** | Vowel formant filter that morphs A-E-I-O-U, with an LFO so it talks | Voice, Sync, Vowel, Rate, Sweep, Mix |
-| 7 | **EQ** | 3-band EQ: low shelf, sweepable mid, high shelf | Low, Mid, Mid Freq, High |
-| 8 | **Saturation** | Warm drive with tilt EQ and auto-gain | Drive, Tone, Mix |
-| 9 | **Fuzz ✨** | Real distortion: Fuzz, Hard Clip, Octave Up or Wavefolder, with a sputter gate | Type, Drive, Tone, Gate, Mix |
-| 10 | **Pitch Shifter** | ±12 semitones | Pitch, Grain, Mix |
-| 11 | **Ring Modulator** | Ring mod with an optional ringtone-style arpeggio | Freq, Shape, Arp, Mix |
-| 12 | **Freq Shifter** | True frequency shifter (±2 kHz). A few Hz thickens, hundreds go alien | Shift, Feedback, Spread, Mix |
-| 13 | **Vocoder ✨** | 16-band vocoder. Carrier: saw, chord, noise, or your sidechain | Carrier, Note, Formant, Release, Mix |
-| 14 | **Robot Voice** | Metallic text-to-speech robot | Pitch, Metal, Buzz, Mix |
-| 15 | **Lo-Fi Codec** | 90s audio: 22–5.5 kHz through 8-bit PCM, u-Law, A-Law or IMA ADPCM | Rate, Codec, Aliasing, Mix |
-| 16 | **Bitcrusher** | Bit-depth + sample-rate reduction | Bits, Rate, Mix |
-| 17 | **Telephone** | Phone line with hiss, hum, crackle and optional modem squeal | Band, Noise, Crackle, Mix, Modem |
-| 18 | **Vinyl Sim** | Crackle, dust pops, worn highs and 33⅓ rpm wow | Crackle, Wear, Wow, Mix |
-| 19 | **MP3 Compression** | Real spectral low-bitrate codec artifacts | Bitrate, Artifacts, Mix |
-| 20 | **Packet Loss** | VoIP dropouts — robot buzz, silence or comfort noise | Loss, Packet, Concealment, Mix |
-| 21 | **Stutter** | Streaming-style stutters and dropouts | Chance, Slice, Dropout, Mix |
-| 22 | **Data Corruption** | Bit flips and reversed fragments | Amount, Bits, Reverse, Mix |
-| 23 | **Varispeed** | Slows down, then speeds up to catch up (lag spike) | Chance, Length, Depth, Mix |
-| 24 | **Wow & Flutter** | Tape wow, flutter and clock drift | Wow, Flutter, Drift, Mix |
-| 25 | **Beat Repeat 🎵** | Repeat / stutter / reverse / tape stop on the grid | Division, Style, Chance, Mix |
-| 26 | **Trance Gate 🎵** | Rhythmic gate with 8 patterns | Pattern, Division, Depth, Smooth |
-| 27 | **Sidechain Pump 🎵** | Ducking on the beat grid — or follows your DAW's sidechain input ✨ | Source, Rate, Depth, Release |
-| 28 | **Volume Swell** | Fades in every new note or chord | Attack, Sens, Mix |
-| 29 | **Chorus** | Lush stereo chorus | Sync, Rate, Depth, Feedback, Mix |
-| 30 | **Flanger** | Jet-whoosh flanger with stereo sweep | Sync, Rate, Depth, Feedback, Mix |
-| 31 | **Phaser** | Multi-stage phaser | Sync, Rate, Depth, Feedback, Mix |
-| 32 | **Tremolo / Pan** | Tremolo that morphs into auto-pan | Sync, Rate, Depth, Shape, Pan |
-| 33 | **Stereo Widener** | Mono-safe widener with slow motion | Width, Motion, Mix |
-| 34 | **Reverse Delay 🎵** | Plays each chunk back backwards — instant reverse swells | Sync, Time, Feedback, Mix |
-| 35 | **Delay 🎵** | Stereo / ping-pong delay with tone and tempo sync | Sync, Time, Feedback, Tone, Mix |
-| 36 | **Blur** | Smears everything into a huge ambient wash. Shimmer adds octave-up sparkle, Freeze holds the sound forever | Size, Smear, Shimmer, Mix, Freeze |
-| 37 | **Reverb** | Big hall reverb | Size, Damp, Width, Mix |
-| 38 | **Compressor** | Easy compressor with auto makeup | Amount, Ratio, Speed, Mix |
-| 39 | **Speaker Sim** | PC speaker, laptop, flip phone, earbuds, CRT TV, boombox | Model, Drive, Mix |
-| — | **Master** | Input / output gain, stereo width, global mix, safety limiter + meter | |
+- **UNDO / REDO** works on pretty much everything: knob moves, loading presets, hitting RANDOM, adding or moving effects. Ctrl+Z / Cmd+Z works too.
+- **A / B** holds two different sounds so you can flip between them and compare. "A > B" copies whatever you're hearing into the other slot.
+- **BROWSE** (or Ctrl/Cmd+F) lets you search the presets and star the ones you like. Starred presets show up at the top of the preset menu.
+- The left and right arrow keys step through presets.
+- Anything that's switched off doesn't use any CPU, and there's a limiter at the very end so nothing can blow your speakers out.
 
-✨ = new in v1.2. 🎵 = locks to your project tempo. With the transport stopped it keeps running on its own clock at the project BPM, so you can still hear it. **Sync** dropdowns lock that effect's LFO to the tempo too (4 bars down to 1/16, including triplets) — the sweep lands in the same place every bar.
+## The effects
 
-**Sidechain:** Evil FX has an optional sidechain input. Route a kick (or anything) to it in your DAW and set Sidechain Pump's *Source* to *Sidechain In*, Noise Gate's *Key* to *Sidechain In*, or the Vocoder's *Carrier* to *Sidechain In*. The status bar shows **SC** when a sidechain is connected; with nothing connected those effects fall back to their normal behaviour.
+This is the default order. You can rearrange them however you want, and the order gets saved with your project and your presets.
 
-## What's new in v1.2
+| # | Effect | What it does |
+|---|--------|--------------|
+| 1 | Noise Gate | Cuts the signal when it drops below the threshold. Can listen to the sidechain instead. |
+| 2 | Transient Shaper | More or less punch on the attack, more or less tail. |
+| 3 | Auto-Tune | Snaps pitch to a key and scale. Set Speed all the way down for the hard T-Pain sound. |
+| 4 | Filter | Low pass, band pass or high pass with an LFO that can sync to tempo. |
+| 5 | Auto-Wah | The harder you play, the more it opens up. |
+| 6 | Talk Box | Sweeps through vowel sounds (A E I O U) so it sounds like it's talking. |
+| 7 | EQ | Low, mid and high. |
+| 8 | Saturation | Gentle warm drive. |
+| 9 | Fuzz | Actual distortion. Fuzz, Hard Clip, Octave Up or Wavefolder. |
+| 10 | Pitch Shifter | Up or down a full octave. |
+| 11 | Ring Modulator | Metallic, bell-ish tones. The Arp knob turns it into an old ringtone. |
+| 12 | Freq Shifter | Shifts everything by the same number of Hz. A little thickens things up, a lot sounds alien. |
+| 13 | Vocoder | Makes your sound "sing" through a synth, a chord, noise, or whatever's on the sidechain. |
+| 14 | Robot Voice | Old text-to-speech robot. |
+| 15 | Lo-Fi Codec | 90s computer audio: low sample rates and old codecs like u-Law and ADPCM. |
+| 16 | Bitcrusher | Fewer bits, lower sample rate. |
+| 17 | Telephone | Phone line, hiss, crackle, and an optional dial-up modem squeal. |
+| 18 | Vinyl Sim | Crackle, dust and a worn-out record. |
+| 19 | MP3 Compression | That swirly, underwater sound of a really low bitrate MP3. |
+| 20 | Packet Loss | Voice chat breaking up. |
+| 21 | Stutter | Like a stream that keeps buffering. |
+| 22 | Data Corruption | Bit flips and little reversed chunks, like a broken download. |
+| 23 | Varispeed | Slows down then catches up, like a lag spike. |
+| 24 | Wow & Flutter | Wobbly tape. |
+| 25 | Beat Repeat | Repeats, stutters, reverses and tape stops, locked to your tempo. |
+| 26 | Trance Gate | Chops the sound in rhythm. 8 patterns. |
+| 27 | Sidechain Pump | Ducks on the beat, or follows a kick you send to the sidechain. |
+| 28 | Volume Swell | Fades every new note in, like a violin. |
+| 29 | Chorus | Thickens things up. |
+| 30 | Flanger | Jet plane whoosh. |
+| 31 | Phaser | Swirly. |
+| 32 | Tremolo / Pan | Volume wobble that can turn into auto-pan. |
+| 33 | Stereo Widener | Makes it wider without wrecking it in mono. |
+| 34 | Reverse Delay | Plays chunks of your sound backwards. |
+| 35 | Delay | Echo, with ping-pong and tempo sync. |
+| 36 | Blur | Smears everything into a big ambient wash. Freeze holds it forever. |
+| 37 | Reverb | Big room. |
+| 38 | Compressor | Simple compressor, makes up the volume for you. |
+| 39 | Speaker Sim | PC speaker, laptop, flip phone, earbuds, CRT TV or boombox. |
 
-- **Arrange your own chain** — drag cards to reorder the effects; right-click a title bar for more.
-- **Undo / Redo** (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) for knob moves, presets, RANDOM, adding/removing/reordering effects.
-- **A / B compare** — two complete sounds you flip between; **A > B** copies what you hear into the other slot. Both save with the project.
-- **Tempo-synced LFOs** on Filter, Talk Box, Chorus, Flanger, Phaser and Tremolo.
-- **4 new effects** — Auto-Tune, Vocoder, Fuzz, Noise Gate — and a **sidechain input** for Pump, Gate and Vocoder.
-- **BROWSE** (Ctrl/Cmd+F) — search every preset, filter by category, ★ favourites (they also appear at the top of the preset menu).
+Beat Repeat, Trance Gate, Sidechain Pump and both delays follow your project tempo. Filter, Talk Box, Chorus, Flanger, Phaser and Tremolo have a Sync dropdown if you want their wobble on the beat too. If your DAW's transport is stopped they just keep going at the project BPM.
 
-  ![Preset browser](docs/browser.png)
-- **102 factory presets**, including new *Vocals & Robots*, *Fuzz & Drive* and *Tempo Motion* categories.
-- **The mascot is alive** — it blinks, and grins wider the louder your mix gets.
+### Using the sidechain
 
-  ![Mascot animation](docs/mascot.png)
-- **Fix:** delay-based effects (since v1.0) could occasionally read one sample past their buffer, causing rare random glitches or dropouts. Found with valgrind, fixed everywhere, and the test suite now runs every effect under it clean.
-- **CLAP** format, plus proper **installers** (Windows .exe, macOS .pkg, Linux tarball with install script) and signing/notarization in CI.
+Route something (usually a kick) into Evil FX's sidechain input in your DAW. Then set Sidechain Pump's Source, the Noise Gate's Key, or the Vocoder's Carrier to "Sidechain In". You'll see "SC" in the status bar at the bottom when it's getting a signal. If nothing's connected those effects just behave normally.
 
-## What's new in v1.1
+## Presets
 
-- **New logo** — a glossy blue smiley in a sideways orange cap with a purple-and-black checker patch. It's also the Standalone app icon.
-- **4 new effects** — Talk Box, Freq Shifter, Flanger and Reverse Delay (tempo-synced).
-- **18 new presets** spread across every category, e.g. *Smiley Says Hi*, *Talking Clouds*, *Reverse Halo*, *Jet Flanger Drums*, *Alien Transmission* and *Smiley Meltdown*.
-- Projects saved with v1.0 open with the same rack — the new effects just start switched off.
+There are 102 presets, sorted into Studio Tools, Heavenly, Ambient Pads, Internet Era, Rhythm & Glitch, Lo-Fi & Speakers, Chaos, Vocals & Robots, Fuzz & Drive and Tempo Motion. RANDOM throws a few effects together with random settings, which is honestly where some of the best sounds come from.
 
-## Features
+Hit SAVE to keep your own. They go in `Documents/Evil FX/Presets` as `.evilfx` files, so you can send them to people.
 
-- **+ ADD FX menu** — effects grouped into Tone & Dynamics, Pitch & Voice, Lo-Fi & Internet Damage, Rhythm (BPM synced), Modulation & Stereo, and Ambient & Space. Ticks show what's already in your rack.
-- **Full-width rack** — 5 cards across, scrolls when you add more, with a "more FX below" button and a glow on the card you just added or jumped to.
-- **102 factory presets** in categories: Start, Studio Tools, Heavenly, Ambient Pads, Internet Era, Rhythm & Glitch, Lo-Fi & Speakers, Chaos, Vocals & Robots, Fuzz & Drive, Tempo Motion.
-- **Save your own presets** — hit **SAVE**. They're stored in `Documents/Evil FX/Presets` and appear under *Your Presets*. Share the `.evilfx` files with friends.
-- **RANDOM** — switches on a few random effects with random settings.
-- **Themes** — Aero Sky (default), Frutiger Metro and Crimson Grid, saved with your project.
+![Preset browser](docs/browser.png)
+
+## Themes
+
+Three backgrounds, picked from the THEME menu: Aero Sky (the default), Frutiger Metro (flat Windows 8 tiles) and Crimson Grid (synthwave sunset).
 
 ![Themes](docs/themes.png)
 
-- **VISUALIZER.EXE** — WinAmp-style spectrum bars or scope. Off by default; zero cost while off.
-- **Lightweight** — the background is drawn once per theme, the UI only redraws what changes, and the audio thread never allocates.
-- **Safe** — click-free switching, latency reported to your DAW, NaN guard, and a safety limiter.
-- **? button** — quick help inside the plugin. The **xainjaya.com** button at the top right opens the website.
-- **Huge ambient pads** — try the Ambient Pads presets, or Blur + Volume Swell + Reverb. Hit Freeze on Blur to hold a chord forever.
+There's also VISUALIZER.EXE at the bottom, a WinAmp-style spectrum/scope. It's off by default and doesn't cost anything while it's off.
 
-## CPU cost
+## Installing
 
-Measured with `EvilFXTests --bench` (Release, 48 kHz stereo, one desktop core). Effects that are off are skipped entirely.
+Grab the installer for your system from the Releases page:
 
-| Effect | CPU | Effect | CPU | Effect | CPU |
-|---|---|---|---|---|---|
-| Filter | 0.06 % | Telephone | 0.23 % | Sidechain Pump | 0.08 % |
-| EQ | 0.07 % | Vinyl Sim | 0.14 % | Chorus | 0.12 % |
-| Saturation | 0.21 % | MP3 Compression | 1.73 % | Phaser | 0.40 % |
-| Pitch Shifter | 0.14 % | Packet Loss | 0.03 % | Tremolo / Pan | 0.14 % |
-| Ring Modulator | 0.22 % | Stutter | 0.05 % | Stereo Widener | 0.08 % |
-| Robot Voice | 0.27 % | Data Corruption | 0.06 % | Delay | 0.19 % |
-| Lo-Fi Codec | 0.13 % | Varispeed | 0.03 % | Reverb | 0.25 % |
-| Bitcrusher | 0.02 % | Wow & Flutter | 0.09 % | Compressor | 0.13 % |
-| Beat Repeat | 0.03 % | Trance Gate | 0.03 % | Speaker Sim | 0.33 % |
-| Blur | 0.60 % | Transient Shaper | 0.17 % | Volume Swell | 0.12 % |
-| Auto-Wah | 0.07 % | Talk Box | 0.27 % | Freq Shifter | 0.26 % |
-| Flanger | 0.32 % | Reverse Delay | 0.30 % | Noise Gate | 0.03 % |
-| Fuzz | 0.36 % | Auto-Tune | 0.62 % | Vocoder | 0.72 % |
-| | | | | **All 39 on** | **~9 %** |
+- **Windows:** `EvilFX-<version>-Windows-Setup.exe`
+- **Mac:** `EvilFX-<version>-macOS.pkg`
+- **Linux:** `EvilFX-<version>-Linux.tar.gz`. Unzip it and run `./install.sh`
 
-## Building
+Both installers let you pick which formats you want. If you'd rather copy things in yourself:
 
-You need **CMake 3.22+** and a C++17 compiler (Visual Studio 2022, Xcode 14+, or GCC 11+/Clang 14+). JUCE 8 and [clap-juce-extensions](https://github.com/free-audio/clap-juce-extensions) are downloaded automatically (turn CLAP off with `-DEVIL_BUILD_CLAP=OFF`).
+| Format | Windows | macOS | Linux |
+|--------|---------|-------|-------|
+| VST3 | `C:\Program Files\Common Files\VST3\` | `~/Library/Audio/Plug-Ins/VST3/` | `~/.vst3/` |
+| CLAP | `C:\Program Files\Common Files\CLAP\` | `~/Library/Audio/Plug-Ins/CLAP/` | `~/.clap/` |
+| AU | | `~/Library/Audio/Plug-Ins/Components/` | |
+| LV2 | | | `~/.lv2/` |
+
+For VST3, copy the whole `Evil FX.vst3` folder, not just the file inside it.
+
+If a Mac build won't open because it's unsigned, run `xattr -cr "Evil FX.vst3"` on it.
+
+**FL Studio:** go to Options > Manage plugins, make sure your VST3 folder is in the list, tick "Verify plugins", hit "Find installed plugins", then star Evil FX so it shows up in your browser.
+
+## Building it yourself
+
+You'll need CMake 3.22 or newer and a C++17 compiler (Visual Studio 2022, Xcode 14+, or GCC 11+/Clang 14+). JUCE and the CLAP wrapper get downloaded for you.
 
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release --parallel
 ```
 
-Plugins land in `build/EvilFX_artefacts/Release/` (`VST3/`, `CLAP/`, `AU/`, `LV2/`, `Standalone/`).
+Everything ends up in `build/EvilFX_artefacts/Release/`.
 
-**Linux packages:** `build-essential cmake ninja-build libasound2-dev libjack-jackd2-dev libfreetype6-dev libfontconfig1-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libglu1-mesa-dev` (or add `-DEVIL_MINIMAL_LINUX_DEPS=ON` in a stripped-down container).
+- On Mac, add `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` to build for both Intel and Apple Silicon.
+- To skip CLAP, add `-DEVIL_BUILD_CLAP=OFF`.
+- On Linux you'll need these packages first: `build-essential cmake ninja-build libasound2-dev libjack-jackd2-dev libfreetype6-dev libfontconfig1-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libglu1-mesa-dev`
 
-**macOS:** add `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` for a universal build.
+### Tests
 
-### Installers
+The build also makes `EvilFXTests`. Run it with no arguments and it puts every effect and preset through a stress test, fuzzes the parameters, and checks that things like reordering, undo and A/B actually work. `--bench` shows how much CPU each effect uses. With everything switched on it's about 9% of one core; most effects on their own are well under 1%.
 
-| Platform | Installer | Built by |
-|----------|-----------|----------|
-| Windows | `EvilFX-<version>-Windows-Setup.exe` — pick VST3 / CLAP / standalone | `packaging/windows/EvilFX.iss` (Inno Setup 6) |
-| macOS | `EvilFX-<version>-macOS.pkg` — pick VST3 / AU / CLAP / standalone | `packaging/macos/make_pkg.sh` |
-| Linux | `EvilFX-<version>-Linux.tar.gz` with `install.sh` (installs to `~/.vst3`, `~/.clap`, `~/.lv2`) | CI |
+### Releases and code signing
 
-GitHub Actions (`.github/workflows/build.yml`) builds all three platforms on every push, runs the tests, and builds the installers. **Push a tag like `v1.2.0` and it publishes a GitHub Release** with every installer attached.
+GitHub Actions builds Windows, Mac and Linux on every push and runs the tests. Push a version tag (like `v1.2.0`) and it builds the installers and posts them as a GitHub Release.
 
-### Code signing
+Unsigned builds work fine, but Windows and macOS will show scary warnings when people install them. To get rid of those you need code signing certificates. Once you add these as repository secrets (Settings > Secrets and variables > Actions), signing turns on by itself:
 
-Unsigned builds work, but Windows SmartScreen and macOS Gatekeeper will warn people. Signing switches on automatically once these repository secrets exist (*Settings → Secrets and variables → Actions*):
+| Secret | What goes in it |
+|--------|-----------------|
+| `WINDOWS_CERT_PFX_BASE64`, `WINDOWS_CERT_PASSWORD` | Your Windows signing certificate (.pfx, base64'd) and its password |
+| `MACOS_CERT_P12_BASE64`, `MACOS_CERT_PASSWORD` | A .p12 with both your "Developer ID Application" and "Developer ID Installer" certificates |
+| `MACOS_DEV_ID_APP`, `MACOS_DEV_ID_INSTALLER` | The names of those two, e.g. `Developer ID Application: Xain Jaya (ABCDE12345)` |
+| `APPLE_ID`, `APPLE_TEAM_ID`, `APPLE_APP_PASSWORD` | For Apple notarization. The password is an [app-specific password](https://support.apple.com/102654), not your real one |
 
-| Secret | What it is |
-|--------|-----------|
-| `WINDOWS_CERT_PFX_BASE64`, `WINDOWS_CERT_PASSWORD` | Your Windows code-signing certificate (.pfx, base64-encoded) and its password |
-| `MACOS_CERT_P12_BASE64`, `MACOS_CERT_PASSWORD` | A .p12 holding your *Developer ID Application* **and** *Developer ID Installer* certificates (base64) |
-| `MACOS_DEV_ID_APP`, `MACOS_DEV_ID_INSTALLER` | Their names, e.g. `Developer ID Application: Xain Jaya (ABCDE12345)` |
-| `APPLE_ID`, `APPLE_TEAM_ID`, `APPLE_APP_PASSWORD` | For notarization (an [app-specific password](https://support.apple.com/102654)) |
+To base64 a certificate: `base64 -i cert.p12 | pbcopy` on a Mac, or `[Convert]::ToBase64String([IO.File]::ReadAllBytes("cert.pfx"))` in PowerShell. Mac certificates come from an Apple Developer account. For Windows you can buy one from somewhere like Certum, Sectigo or SSL.com, or use Azure Trusted Signing.
 
-Base64 a certificate with `base64 -i cert.p12 | pbcopy` (macOS) or `[Convert]::ToBase64String([IO.File]::ReadAllBytes("cert.pfx"))` (PowerShell). The macOS certificates come from an Apple Developer account; Windows certificates from a CA such as Certum, Sectigo or SSL.com (or Azure Trusted Signing).
-
-### Installing by hand
-
-| Format | Windows | macOS | Linux |
-|--------|---------|-------|-------|
-| VST3 | `C:\Program Files\Common Files\VST3\` (copy the whole `Evil FX.vst3` folder) | `~/Library/Audio/Plug-Ins/VST3/` | `~/.vst3/` |
-| CLAP | `C:\Program Files\Common Files\CLAP\` | `~/Library/Audio/Plug-Ins/CLAP/` | `~/.clap/` |
-| AU | — | `~/Library/Audio/Plug-Ins/Components/` | — |
-| LV2 | — | — | `~/.lv2/` |
-
-Unsigned macOS builds may need `xattr -cr "Evil FX.vst3"`.
-
-**FL Studio:** Options → Manage plugins → make sure the VST3 folder is listed → tick *Verify plugins* → *Find installed plugins* → star **Evil FX**.
-
----
-
-## Project layout
+## Finding your way around the code
 
 ```
 Source/
-  Params.h              every parameter (IDs, ranges, units)
-  Rack.h                default chain order, saved order, which effects are in the rack
-  Presets.h             factory presets, user presets, randomize
-  PluginProcessor.*     the chain, transport/BPM, master, limiter, latency
-  PluginEditor.*        window, + ADD FX menu, rack, themes, presets UI
-  dsp/Modules.h         core effects + Slot wrapper (power switch / fades)
-  dsp/NetModules.h      internet-era pack (codec, packet loss, corrupt, lag, jitter, speaker)
-  dsp/BeatModules.h     glitch, gate, nightcore, ringtone, glory comp
-  dsp/ExtraModules.h    EQ, vinyl, robot voice, sidechain pump, stereo widener
-  dsp/AmbientModules.h  transient shaper, auto-wah, volume swell, blur
-  dsp/FreshModules.h    talk box, frequency shifter, flanger, reverse delay
-  dsp/ProModules.h      noise gate, fuzz, auto-tune, vocoder
-  ui/EvilLookAndFeel.h  glossy crimson orbs, Win9x bevels, the smiley mascot logo
-  ui/ModuleCard.h       one card per effect
-  ui/Visualizer.h       VISUALIZER.EXE
-  ui/PresetBrowser.h    BROWSE: search, categories, favourites
-packaging/              Windows (Inno Setup), macOS (.pkg) and Linux installers
-Tests/HeadlessTests.cpp stress test, fuzzing, presets, CPU bench, UI snapshot, icon render
-docs/icon.png           the mascot (app icon) — regenerate with `EvilFXTests --icon docs/icon.png 512`
+  Params.h              every parameter
+  Rack.h                default effect order and what's in the rack
+  Presets.h             factory presets, saving/loading, random
+  PluginProcessor.*     runs the chain, tempo, master section, limiter
+  PluginEditor.*        the window, rack, menus and themes
+  dsp/                  the effects themselves
+  ui/                   look and feel, effect cards, visualizer, preset browser
+packaging/              installer scripts for Windows, Mac and Linux
+Tests/HeadlessTests.cpp the test tool
 ```
 
-### Adding an effect
+To add a new effect:
 
-1. Add its parameters (including `yourfx_on`) in `Params.h`.
-2. Write a class deriving from `xfx::Module` (`prepare`, `reset`, `process(L, R, n)`). Take a `const Transport&` for tempo sync, a `const SideChain&` for the sidechain input.
-3. Add it in the `EvilFXProcessor` constructor, `ModuleIndex`, and `Rack.h` (same position, bump `numModules`). Saved projects store effects by ID, so old projects keep working.
-4. Add a `CardSpec` in `moduleSpecs()` in `PluginEditor.cpp` (same position) and give it a menu category in `categoryOf()`.
+1. Add its parameters in `Params.h`, including an on/off one called `yourfx_on`.
+2. Write a class based on `xfx::Module` with `prepare`, `reset` and `process`. If it needs the tempo, take a `const Transport&`; if it needs the sidechain, a `const SideChain&`.
+3. Add it to the `EvilFXProcessor` constructor, `ModuleIndex` and `Rack.h`, all at the same position, and bump `numModules`.
+4. Give it a card in `moduleSpecs()` in `PluginEditor.cpp` and a menu category in `categoryOf()`.
+
+Saved projects remember effects by name, so adding new ones won't break anyone's old sessions.
+
+## What changed
+
+**1.2**
+- You can rearrange the effects now
+- Undo/redo, A/B compare and the preset browser with favourites
+- Tempo sync on the modulation effects
+- New effects: Auto-Tune, Vocoder, Fuzz and Noise Gate, plus a sidechain input
+- 19 new presets (102 total)
+- CLAP version and real installers
+- Cleaned up the colours so everything's readable on every theme, and redid the Frutiger Metro theme so it actually looks like Metro
+- Fixed a bug, there since 1.0, where delay-type effects could occasionally read garbage and glitch out
+
+**1.1**
+- New logo: the blue smiley guy in the orange cap
+- New effects: Talk Box, Freq Shifter, Flanger and Reverse Delay
+- 18 new presets
 
 ## License
 
-**AGPL-3.0-or-later** — see [LICENSE](LICENSE). Built on [JUCE](https://juce.com) under its AGPLv3 option.
+AGPL-3.0-or-later. See [LICENSE](LICENSE). Built with [JUCE](https://juce.com) under its AGPLv3 option.
 
 VST is a trademark of Steinberg Media Technologies GmbH. Audio Unit is a trademark of Apple Inc.
